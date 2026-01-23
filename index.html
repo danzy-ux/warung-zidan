@@ -50,27 +50,25 @@ footer{text-align:center;font-size:13px;color:#777;padding:15px}
   "
 >
   
-<div class="produk-grid">
-
-<div class="produk">
-<img src="img/kolang.jpg">
-<h3>Kolang Kaling</h3>
-<p class="harga">Rp 13.000 / kg</p>
-<button onclick="tambahCart('Kolang Kaling',13000)">Tambah</button>
+<div class="produk" data-nama="kolang kaling">
+  <img src="img/kolang.jpg">
+  <h3>Kolang Kaling</h3>
+  <p class="harga">Rp 13.000 / kg</p>
+  <button onclick="tambahCart('Kolang Kaling',13000)">Tambah</button>
 </div>
 
-<div class="produk">
-<img src="img/cireng.jpg">
-<h3>Cireng Ayam</h3>
-<p class="harga">Rp 1.000 / pcs</p>
-<button onclick="tambahCart('Cireng Ayam',1000)">Tambah</button>
+<div class="produk" data-nama="cireng ayam">
+  <img src="img/cireng.jpg">
+  <h3>Cireng Ayam</h3>
+  <p class="harga">Rp 1.000 / pcs</p>
+  <button onclick="tambahCart('Cireng Ayam',1000)">Tambah</button>
 </div>
 
-<div class="produk">
-<img src="img/risol.jpg">
-<h3>Risol</h3>
-<p class="harga">Rp 1.000 / pcs</p>
-<button onclick="tambahCart('Risol',1000)">Tambah</button>
+<div class="produk" data-nama="risol">
+  <img src="img/risol.jpg">
+  <h3>Risol</h3>
+  <p class="harga">Rp 1.000 / pcs</p>
+  <button onclick="tambahCart('Risol',1000)">Tambah</button>
 </div>
 
 </div>
@@ -106,9 +104,29 @@ if ("serviceWorker" in navigator) {
     .then(() => console.log("Service Worker aktif"))
     .catch(err => console.log("SW error:", err));
 }
+<script>
+function cariProduk() {
+  const keyword = document
+    .getElementById("searchInput")
+    .value
+    .toLowerCase();
+
+  const semuaProduk = document.querySelectorAll(".produk");
+
+  semuaProduk.forEach(produk => {
+    const nama = produk.getAttribute("data-nama").toLowerCase();
+
+    if (nama.includes(keyword)) {
+      produk.style.display = "";
+    } else {
+      produk.style.display = "none";
+    }
+  });
+}
 </script>
 
 </body>
 </html>
+
 
 
