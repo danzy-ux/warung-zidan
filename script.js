@@ -22,10 +22,14 @@ function tambahCart(nama, harga) {
   renderCart();
 }
 
-// HAPUS 1 ITEM
-function hapusItem(index) {
-  if (!confirm("Hapus produk ini?")) return;
-  cart.splice(index, 1);
+// KURANGI 1 QTY
+function kurangQty(index) {
+  if (cart[index].qty > 1) {
+    cart[index].qty -= 1;
+  } else {
+    cart.splice(index, 1);
+  }
+
   simpanCart();
   renderCart();
 }
@@ -55,17 +59,26 @@ function renderCart() {
     div.style.display = "flex";
     div.style.justifyContent = "space-between";
     div.style.alignItems = "center";
+    div.style.marginBottom = "6px";
 
     div.innerHTML = `
       <span>
-        ${item.nama} x ${item.qty}
-        <b>Rp ${subtotal.toLocaleString("id-ID")}</b>
+        ${item.nama} 
+        <b>x ${item.qty}</b><br>
+        <small>Rp ${subtotal.toLocaleString("id-ID")}</small>
       </span>
+
       <button
-        onclick="hapusItem(${index})"
-        style="background:#e53935;border:none;color:#fff;
-               padding:4px 8px;border-radius:6px;cursor:pointer">
-        ❌
+        onclick="kurangQty(${index})"
+        style="
+          background:#e53935;
+          border:none;
+          color:#fff;
+          padding:6px 10px;
+          border-radius:6px;
+          cursor:pointer
+        ">
+        −
       </button>
     `;
 
@@ -121,7 +134,7 @@ function kirimWA() {
   pesan += `\nTotal: Rp ${total.toLocaleString("id-ID")}`;
   pesan += `\nCatatan: ${document.getElementById("catatan").value}`;
 
-  const nomorWA = "6281234567890"; // GANTI NOMOR KAMU
+  const nomorWA = "6281234567890"; // GANTI
   window.open(`https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`);
 }
 
