@@ -22,7 +22,15 @@ function tambahCart(nama, harga) {
   renderCart();
 }
 
-// HAPUS CART
+// HAPUS 1 ITEM
+function hapusItem(index) {
+  if (!confirm("Hapus produk ini?")) return;
+  cart.splice(index, 1);
+  simpanCart();
+  renderCart();
+}
+
+// HAPUS SEMUA CART
 function kosongkanCart() {
   if (!confirm("Hapus semua isi keranjang?")) return;
   cart = [];
@@ -38,16 +46,29 @@ function renderCart() {
   list.innerHTML = "";
   let total = 0;
 
-  cart.forEach(item => {
+  cart.forEach((item, index) => {
     const subtotal = item.harga * item.qty;
     total += subtotal;
 
     const div = document.createElement("div");
     div.className = "checkout-item";
+    div.style.display = "flex";
+    div.style.justifyContent = "space-between";
+    div.style.alignItems = "center";
+
     div.innerHTML = `
-      ${item.nama} x ${item.qty}
-      <b>Rp ${subtotal.toLocaleString("id-ID")}</b>
+      <span>
+        ${item.nama} x ${item.qty}
+        <b>Rp ${subtotal.toLocaleString("id-ID")}</b>
+      </span>
+      <button
+        onclick="hapusItem(${index})"
+        style="background:#e53935;border:none;color:#fff;
+               padding:4px 8px;border-radius:6px;cursor:pointer">
+        ❌
+      </button>
     `;
+
     list.appendChild(div);
   });
 
