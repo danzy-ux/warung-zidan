@@ -7,20 +7,65 @@
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1e7f34">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
 
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#f1f1f1}
-header{background:linear-gradient(135deg,#1e7f34,#43a047);color:#fff;padding:20px;text-align:center}
-.container{max-width:1100px;margin:20px auto;padding:10px}
-.produk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px}
-.produk{background:#fff;border-radius:15px;padding:15px;box-shadow:0 8px 20px rgba(0,0,0,.08)}
-.produk img{width:100%;height:160px;object-fit:cover;border-radius:10px}
-.produk h3{margin:10px 0 5px}
-.harga{color:#1e7f34;font-weight:bold}
-button{width:100%;background:#25d366;color:#fff;border:none;padding:10px;border-radius:8px;cursor:pointer;margin-top:8px}
-.checkout{background:#fff;padding:15px;border-radius:15px;margin-top:30px;box-shadow:0 8px 20px rgba(0,0,0,.08)}
+header{background:linear-gradient(135deg,#1e7f34,#43a047);color:#fff;padding:18px;text-align:center}
+.container{max-width:1100px;margin:15px auto;padding:10px}
+
+/* 🔥 PRODUK RINGKAS */
+.produk-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:12px
+}
+
+.produk{
+  background:#fff;
+  border-radius:12px;
+  padding:10px;
+  box-shadow:0 4px 10px rgba(0,0,0,.08)
+}
+
+.produk img{
+  width:100%;
+  height:100px;
+  object-fit:cover;
+  border-radius:8px
+}
+
+.produk h3{
+  font-size:14px;
+  margin:6px 0 2px
+}
+
+.harga{
+  font-size:13px;
+  color:#1e7f34;
+  font-weight:bold
+}
+
+button{
+  width:100%;
+  background:#25d366;
+  color:#fff;
+  border:none;
+  padding:7px;
+  border-radius:7px;
+  font-size:13px;
+  cursor:pointer;
+  margin-top:6px
+}
+
+/* CHECKOUT */
+.checkout{
+  background:#fff;
+  padding:15px;
+  border-radius:15px;
+  margin-top:25px;
+  box-shadow:0 8px 20px rgba(0,0,0,.08)
+}
+
 .checkout-item{font-size:14px;margin-bottom:5px}
 .checkout-total{font-weight:bold;margin-top:10px}
 footer{text-align:center;font-size:13px;color:#777;padding:15px}
@@ -36,58 +81,63 @@ footer{text-align:center;font-size:13px;color:#777;padding:15px}
 
 <div class="container">
 
-<input type="text" id="searchInput" placeholder="🔍 Cari produk..."
-style="width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin-bottom:20px;font-size:16px">
+<!-- 🔍 SEARCH -->
+<input type="text" id="searchInput"
+placeholder="🔍 Cari produk..."
+style="width:100%;padding:10px;border-radius:10px;border:1px solid #ccc;margin-bottom:15px">
 
+<!-- 📦 PRODUK -->
 <div class="produk-grid">
 
   <div class="produk" data-nama="kolang kaling">
     <img src="img/kolang.jpg">
     <h3>Kolang Kaling</h3>
-    <p class="harga">Rp 13.000 / kg</p>
+    <div class="harga">Rp 13.000 / kg</div>
     <button onclick="tambahCart('Kolang Kaling',13000)">Tambah</button>
   </div>
 
   <div class="produk" data-nama="cireng ayam">
     <img src="img/cireng.jpg">
     <h3>Cireng Ayam</h3>
-    <p class="harga">Rp 1.000 / pcs</p>
+    <div class="harga">Rp 1.000 / pcs</div>
     <button onclick="tambahCart('Cireng Ayam',1000)">Tambah</button>
   </div>
 
   <div class="produk" data-nama="risol">
     <img src="img/risol.jpg">
     <h3>Risol</h3>
-    <p class="harga">Rp 1.000 / pcs</p>
+    <div class="harga">Rp 1.000 / pcs</div>
     <button onclick="tambahCart('Risol',1000)">Tambah</button>
   </div>
 
 </div>
 
+<!-- 🧾 CHECKOUT -->
 <div class="checkout">
   <h3>🧾 Checkout</h3>
   <div id="checkoutList"></div>
 
-  <label>📝 Catatan Pembeli</label>
   <textarea id="catatan" rows="3"
-  style="width:100%;padding:8px;border-radius:8px;margin-top:5px"></textarea>
+  placeholder="Catatan pembeli"
+  style="width:100%;padding:8px;border-radius:8px"></textarea>
 
   <div class="checkout-total" id="checkoutTotal">Total: Rp 0</div>
 
-  <button onclick="tampilInvoice()">Checkout & Lihat Invoice</button>
-  <button onclick="kosongkanCart()" style="background:#e53935;margin-top:8px">
+  <button onclick="tampilInvoice()">Checkout</button>
+  <button onclick="kosongkanCart()" style="background:#e53935;margin-top:6px">
     🗑 Hapus Keranjang
   </button>
 </div>
 
-<div id="invoice" style="display:none;margin-top:30px">
-  <div style="background:#fff;padding:20px;border-radius:15px">
+<!-- 🧾 INVOICE -->
+<div id="invoice" style="display:none;margin-top:20px">
+  <div style="background:#fff;padding:15px;border-radius:15px">
     <h3 style="text-align:center">🧾 INVOICE</h3>
     <div id="invoiceList"></div>
     <hr>
     <b>Total: <span id="invoiceTotal"></span></b>
     <p id="invoiceNote"></p>
-    <button onclick="kirimWA()" style="margin-top:10px">Kirim WhatsApp</button>
+    <button onclick="kirimWA()">Kirim WhatsApp</button>
   </div>
 </div>
 
@@ -97,22 +147,14 @@ style="width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin-b
 
 <script src="script.js"></script>
 
+<!-- 🔍 SEARCH REALTIME -->
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-  document.getElementById("searchInput").addEventListener("input", function () {
-    const keyword = this.value.toLowerCase().trim();
-    document.querySelectorAll(".produk").forEach(produk => {
-      const nama = produk.dataset.nama.toLowerCase();
-      produk.style.display = nama.includes(keyword) ? "" : "none";
-    });
+document.getElementById("searchInput").addEventListener("input", function(){
+  const key=this.value.toLowerCase();
+  document.querySelectorAll(".produk").forEach(p=>{
+    p.style.display=p.dataset.nama.includes(key)?"":"none";
   });
 });
-</script>
-
-<script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js");
-}
 </script>
 
 </body>
