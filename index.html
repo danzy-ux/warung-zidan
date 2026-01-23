@@ -31,4 +31,60 @@ footer{text-align:center;font-size:13px;color:#777;padding:15px}
 
 <header>
 <h1>Warung Zidan</h1>
-<p>Makanan Rumahan • Fresh Seti
+<p>Makanan Rumahan • Fresh Setiap Hari</p>
+</header>
+
+<div class="container">
+<div class="produk-grid">
+
+<div class="produk">
+<img src="img/kolang.jpg">
+<h3>Kolang Kaling</h3>
+<p class="harga">Rp 13.000 / kg</p>
+<button onclick="tambahCart('Kolang Kaling',13000)">Tambah</button>
+</div>
+
+<div class="produk">
+<img src="img/cireng.jpg">
+<h3>Cireng Ayam</h3>
+<p class="harga">Rp 1.000 / pcs</p>
+<button onclick="tambahCart('Cireng Ayam',1000)">Tambah</button>
+</div>
+
+<div class="produk">
+<img src="img/risol.jpg">
+<h3>Risol</h3>
+<p class="harga">Rp 1.000 / pcs</p>
+<button onclick="tambahCart('Risol',1000)">Tambah</button>
+</div>
+
+</div>
+
+<div class="checkout">
+<h3>🧾 Checkout</h3>
+<div id="checkoutList"></div>
+
+<label>📝 Catatan Pembeli</label>
+<textarea id="catatan" rows="3" style="width:100%;padding:8px;border-radius:8px;margin-top:5px"></textarea>
+
+<div class="checkout-total" id="checkoutTotal">Total: Rp 0</div>
+
+<button onclick="kirimWA()">Checkout & WhatsApp</button>
+<button onclick="kosongkanCart()" style="background:#e53935;margin-top:8px">🗑 Hapus Keranjang</button>
+</div>
+</div>
+
+<footer>© 2026 Warung Zidan</footer>
+
+<!-- FILE JS UTAMA -->
+<script src="script.js"></script>
+
+<!-- SERVICE WORKER -->
+<script>
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("service-worker.js");
+}
+</script>
+
+</body>
+</html>
