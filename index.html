@@ -5,220 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Warung Zidan</title>
 
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1e7f34">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f1f1f1;
-}
-
-header {
-  background: linear-gradient(135deg, #1e7f34, #43a047);
-  color: white;
-  padding: 20px;
-  text-align: center;
-}
-
-.container {
-  max-width: 1100px;
-  margin: 20px auto;
-  padding: 10px;
-}
-
-.produk-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
-}
-
-.produk {
-  background: white;
-  border-radius: 15px;
-  padding: 15px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-}
-
-.produk img {
-  width: 100%;
-  height: 160px;
-  object-fit: cover;
-  border-radius: 10px;
-}
-
-.produk h3 {
-  margin: 10px 0 5px;
-}
-
-.harga {
-  color: #1e7f34;
-  font-weight: bold;
-}
-
-button {
-  width: 100%;
-  background: #25d366;
-  color: white;
-  border: none;
-  padding: 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-top: 8px;
-}
-
-.checkout {
-  background: white;
-  padding: 15px;
-  border-radius: 15px;
-  margin-top: 30px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-}
-
-.checkout-item {
-  font-size: 14px;
-  margin-bottom: 5px;
-}
-
-.checkout-total {
-  font-weight: bold;
-  margin-top: 10px;
-}
-
-footer {
-  text-align: center;
-  font-size: 13px;
-  color: #777;
-  padding: 15px;
-}
+body{margin:0;font-family:Arial,sans-serif;background:#f1f1f1}
+header{background:linear-gradient(135deg,#1e7f34,#43a047);color:#fff;padding:20px;text-align:center}
+.container{max-width:1100px;margin:20px auto;padding:10px}
+.produk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px}
+.produk{background:#fff;border-radius:15px;padding:15px;box-shadow:0 8px 20px rgba(0,0,0,.08)}
+.produk img{width:100%;height:160px;object-fit:cover;border-radius:10px}
+.produk h3{margin:10px 0 5px}
+.harga{color:#1e7f34;font-weight:bold}
+button{width:100%;background:#25d366;color:#fff;border:none;padding:10px;border-radius:8px;cursor:pointer;margin-top:8px}
+.checkout{background:#fff;padding:15px;border-radius:15px;margin-top:30px;box-shadow:0 8px 20px rgba(0,0,0,.08)}
+.checkout-item{font-size:14px;margin-bottom:5px}
+.checkout-total{font-weight:bold;margin-top:10px}
+footer{text-align:center;font-size:13px;color:#777;padding:15px}
 </style>
 </head>
 
 <body>
 
 <header>
-  <h1>Warung Zidan</h1>
-  <p>Makanan Rumahan • Fresh Setiap Hari</p>
-</header>
-
-<div class="container">
-
-  <!-- PRODUK -->
-  <div class="produk-grid">
-
-    <div class="produk">
-      <img src="img/kolang.jpg">
-      <h3>Kolang Kaling</h3>
-      <p class="harga">Rp 13.000 / kg</p>
-      <button onclick="tambahCart('Kolang Kaling',13000)">Tambah</button>
-    </div>
-
-    <div class="produk">
-      <img src="img/cireng.jpg">
-      <h3>Cireng Ayam</h3>
-      <p class="harga">Rp 1.000 / pcs</p>
-      <button onclick="tambahCart('Cireng Ayam',1000)">Tambah</button>
-    </div>
-
-    <div class="produk">
-      <img src="img/risol.jpg">
-      <h3>Risol</h3>
-      <p class="harga">Rp 1.000 / pcs</p>
-      <button onclick="tambahCart('Risol',1000)">Tambah</button>
-    </div>
-
-  </div>
-
-  <!-- CHECKOUT -->
-  <div class="checkout">
-    <h3>🧾 Checkout</h3>
-
-    <div id="checkoutList"></div>
-
-    <label>📝 Catatan Pembeli</label>
-    <textarea id="catatan" rows="3"
-      placeholder="Contoh: pedas sedang, alamat dekat masjid"
-      style="width:100%;padding:8px;border-radius:8px;margin-top:5px;"></textarea>
-
-    <div class="checkout-total" id="checkoutTotal">Total: Rp 0</div>
-
-    <button onclick="kirimWA()">Checkout & WhatsApp</button>
-    <button onclick="kosongkanCart()" style="background:#e53935;margin-top:8px;">
-      🗑 Hapus Keranjang
-    </button>
-  </div>
-
-</div>
-
-<footer>
-© 2026 Warung Zidan
-</footer>
-
-<script>
-const nomorWA = "6285158765900";
-let cart = [];
-
-function formatRupiah(angka) {
-  return "Rp " + angka.toLocaleString("id-ID");
-}
-
-function tambahCart(nama, harga) {
-  const item = cart.find(p => p.nama === nama);
-  if (item) {
-    item.qty++;
-  } else {
-    cart.push({ nama, harga, qty: 1 });
-  }
-  renderCart();
-}
-
-function renderCart() {
-  const list = document.getElementById("checkoutList");
-  const totalEl = document.getElementById("checkoutTotal");
-
-  list.innerHTML = "";
-  let total = 0;
-
-  cart.forEach(item => {
-    const subtotal = item.harga * item.qty;
-    total += subtotal;
-    list.innerHTML += `
-      <div class="checkout-item">
-        ${item.nama} x${item.qty} (${formatRupiah(subtotal)})
-      </div>`;
-  });
-
-  totalEl.innerText = "Total: " + formatRupiah(total);
-}
-
-function kosongkanCart() {
-  cart = [];
-  renderCart();
-}
-
-function kirimWA() {
-  if (cart.length === 0) {
-    alert("Keranjang masih kosong!");
-    return;
-  }
-
-  let pesan = "Halo kak, saya ingin pesan:%0A";
-  let total = 0;
-
-  cart.forEach(item => {
-    const subtotal = item.harga * item.qty;
-    pesan += `- ${item.nama} x${item.qty} (${formatRupiah(subtotal)})%0A`;
-    total += subtotal;
-  });
-
-  const catatan = document.getElementById("catatan").value.trim();
-  if (catatan !== "") {
-    pesan += `%0A📝 Catatan:%0A${encodeURIComponent(catatan)}%0A`;
-  }
-
-  pesan += `%0ATotal: ${formatRupiah(total)}`;
-
-  window.open(`https://wa.me/${nomorWA}?text=${pesan}`, "_blank");
-}
-</script>
-
-</body>
-</html>
+<h1>Warung Zidan</h1>
+<p>Makanan Rumahan • Fresh Seti
