@@ -1,94 +1,47 @@
 const nomorWA = "6285158765900";
-
-const produk = [
-  { nama: "Kolang Kaling", harga: 13000, gambar: "img/kolang.jpg" },
-  { nama: "Cireng Ayam Suwir", harga: 1000, gambar: "img/cireng.jpg" },
-  { nama: "Risol", harga: 1000, gambar: "img/risol.jpg" }
-];
-
-const grid = document.getElementById("produkGrid");
-const cartList = document.getElementById("cartList");
-const totalHargaEl = document.getElementById("totalHarga");
-
 let cart = [];
 
-function formatRupiah(angka) {
-  return "Rp " + angka.toLocaleString("id-ID");
+function formatRupiah(a){
+  return "Rp " + a.toLocaleString("id-ID");
 }
 
-/* ===== PRODUK ===== */
-produk.forEach((item, index) => {
-  grid.innerHTML += `
-    <div class="produk">
-      <img src="${item.gambar}">
-      <h3>${item.nama}</h3>
-      <p class="harga">${formatRupiah(item.harga)}</p>
-      <button onclick="tambahCart(${index})">Tambah</button>
-    </div>
-  `;
-});
-
-/* ===== CART ===== */
-function tambahCart(index) {
-  const item = cart.find(i => i.nama === produk[index].nama);
-
-  if (item) {
+function tambahCart(nama, harga){
+  let item = cart.find(p => p.nama === nama);
+  if(item){
     item.qty++;
   } else {
-    cart.push({
-      nama: produk[index].nama,
-      harga: produk[index].harga,
-      qty: 1
-    });
+    cart.push({ nama, harga, qty: 1 });
   }
-
   renderCart();
 }
 
-function renderCart() {
-  cartList.innerHTML = "";
+function renderCart(){
+  const list = document.getElementById("checkoutList");
+  const totalEl = document.getElementById("checkoutTotal");
+
+  list.innerHTML = "";
   let total = 0;
 
-  cart.forEach((item, i) => {
-    total += item.harga * item.qty;
-
-    cartList.innerHTML += `
-      <div class="cart-item">
-        <span>${item.nama}</span>
-
-        <div class="qty">
-          <button onclick="kurang(${i})">−</button>
-          <strong>${item.qty}</strong>
-          <button onclick="tambah(${i})">+</button>
-        </div>
-
-        <button class="hapus" onclick="hapusItem(${i})">❌</button>
+  cart.forEach(item => {
+    let subtotal = item.harga * item.qty;
+    total += subtotal;
+    list.innerHTML += `
+      <div class="checkout-item">
+        ${item.nama} x${item.qty} (${formatRupiah(subtotal)})
       </div>
     `;
   });
 
-  totalHargaEl.innerText = "Total: " + formatRupiah(total);
+  totalEl.innerText = "Total: " + formatRupiah(total);
 }
 
-function tambah(i) {
-  cart[i].qty++;
+function kosongkanCart(){
+  cart = [];
   renderCart();
 }
 
-function kurang(i) {
-  cart[i].qty--;
-  if (cart[i].qty <= 0) cart.splice(i, 1);
-  renderCart();
-}
-
-function hapusItem(i) {
-  cart.splice(i, 1);
-  renderCart();
-}
-
-/* ===== WHATSAPP ===== */
-function kirimWA() {
-  if (cart.length === 0) {
+function kirimWA(){
+  if(cart.length === 0){
     alert("Keranjang masih kosong!");
     return;
   }
@@ -97,11 +50,16 @@ function kirimWA() {
   let total = 0;
 
   cart.forEach(item => {
-    pesan += `- ${item.nama} x${item.qty} (${formatRupiah(item.harga * item.qty)})%0A`;
-    total += item.harga * item.qty;
+    let subtotal = item.harga * item.qty;
+    pesan += `- ${item.nama} x${item.qty} (${formatRupiah(subtotal)})%0A`;
+    total += subtotal;
   });
 
-  pesan += `%0ATotal: ${formatRupiah(total)}`;
+  let catatan = document.getElementById("catatan").value.trim();
+  if(catatan){
+    pesan += `%0A📝 Catatan:%0A${encodeURIComponent(catatan)}%0A`;
+  }
 
+  pesan += `%0ATotal: ${formatRupiah(total)}`;
   window.open(`https://wa.me/${nomorWA}?text=${pesan}`, "_blank");
 }
