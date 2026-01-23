@@ -140,3 +140,22 @@ function kirimWA() {
 
 // LOAD SAAT BUKA
 renderCart();
+// =========================
+// TAMBAH & KURANGI PER ITEM
+// =========================
+function tambahQty(index) {
+  cart[index].qty += 1;
+  simpanCart();
+  renderCart();
+}
+
+function kurangQty(index) {
+  cart[index].qty -= 1;
+
+  if (cart[index].qty <= 0) {
+    cart.splice(index, 1);
+  }
+
+  simpanCart();
+  renderCart();
+}
