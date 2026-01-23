@@ -1,39 +1,101 @@
-<script>
+const nomorWA = "6285158765900";
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
-let total = 0;
 
-const checkoutList = document.getElementById("checkoutList");
-const checkoutTotal = document.getElementById("checkoutTotal");
-
-/* SIMPAN CART */
 function simpanCart() {
   localStorage.setItem("cart", JSON.stringify(cart));
 }
 
-/* TAMPILKAN CART */
-function renderCart() {
-  checkoutList.innerHTML = "";
-  total = 0;
-
-  cart.forEach((item, index) => {
-    const div = document.createElement("div");
-    div.className = "checkout-item";
-    div.innerHTML = `
-      ${item.nama} - Rp ${item.harga.toLocaleString()}
-      <span style="float:right;cursor:pointer;color:red"
-        onclick="hapusItem(${index})">❌</span>
-    `;
-    checkoutList.appendChild(div);
-    total += item.harga;
-  });
-
-  checkoutTotal.innerText = "Total: Rp " + total.toLocaleString();
+function formatRupiah(angka) {
+  return "Rp " + angka.toLocaleString("id-ID");
 }
 
-/* TAMBAH KE CART */
 function tambahCart(nama, harga) {
-  cart.push({ nama, harga });
+  const item = cart.find(p => p.nama === nama);
+  if (item) {
+    item.qty++;
+  } else {
+    cart.push({ nama, harga, qty: 1 });
+  }
   simpanCart();
+  renderCart();
+}
+
+function renderCart() {
+  const list = document.getElementById("checkoutList");
+  const totalEl = document.getElementById("checkoutTotal");
+
+  list.innerHTML = "";
+  let total = 0;
+
+  cart.forEach(item => {
+    const subtotal = item.harga * item.qty;
+    total += subtotal;
+
+    list.innerHTML += `
+      <div class="checkout-item">
+        ${item.nama} x${item.qty}
+        <b>${formatRupiah(subtotal)}</b>
+      </div>
+    `;
+  });
+
+  totalEl.innerText = "Total: " + formatRupiah(total);
+}
+
+function kosongkanCart() {
+  cart = [];
+  simpanCart();
+  renderCart();
+}
+
+function tampilInvoice() {
+  if (cart.length === 0) {
+    alert("Keranjang kosong");
+    return;
+  }
+
+  const list = document.getElementById("invoiceList");
+  const totalEl = document.getElementById("invoiceTotal");
+  const noteEl = document.getElementById("invoiceNote");
+
+  list.innerHTML = "";
+  let total = 0;
+
+  cart.forEach(item => {
+    const subtotal = item.harga * item.qty;
+    total += subtotal;
+
+    list.innerHTML += `
+      <div style="display:flex;justify-content:space-between;font-size:14px">
+        <span>${item.nama} x${item.qty}</span>
+        <span>${formatRupiah(subtotal)}</span>
+      </div>
+    `;
+  });
+
+  totalEl.innerText = formatRupiah(total);
+
+  const catatan = document.getElementById("catatan").value;
+  noteEl.innerText = catatan ? "📝 " + catatan : "";
+
+  document.getElementById("invoice").style.display = "block";
+}
+
+function kirimWA() {
+  let pesan = "Halo kak, saya pesan:%0A";
+  let total = 0;
+
+  cart.forEach(item => {
+    const subtotal = item.harga * item.qty;
+    pesan += `- ${item.nama} x${item.qty} (${formatRupiah(subtotal)})%0A`;
+    total += subtotal;
+  });
+
+  pesan += `%0ATotal: ${formatRupiah(total)}`;
+  window.open(`https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`);
+}
+
+window.onload = renderCart;
   renderCart();
 }
 
