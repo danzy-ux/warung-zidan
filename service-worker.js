@@ -1,8 +1,5 @@
 const CACHE_NAME = "warung-zidan-v1";
-const FILES_TO_CACHE = [
-  "./",
-  "./index.html"
-];
+const FILES_TO_CACHE = ["./","./index.html"];
 
 self.addEventListener("install", e => {
   e.waitUntil(
