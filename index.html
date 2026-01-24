@@ -53,7 +53,7 @@ button{
   margin-top:25px;
   box-shadow:0 8px 20px rgba(0,0,0,.08)
 }
-.checkout-item{font-size:14px;margin-bottom:5px}
+.checkout-item{font-size:14px;margin-bottom:6px}
 .checkout-total{font-weight:bold;margin-top:10px}
 footer{text-align:center;font-size:13px;color:#777;padding:15px}
 </style>
@@ -66,7 +66,7 @@ footer{text-align:center;font-size:13px;color:#777;padding:15px}
   <p>Makanan Rumahan • Fresh Setiap Hari</p>
 </header>
 
-<!-- 🔐 INFO APK AMAN -->
+<!-- INFO APK AMAN -->
 <div style="
   background:#e8f5e9;
   color:#2e7d32;
@@ -79,7 +79,7 @@ footer{text-align:center;font-size:13px;color:#777;padding:15px}
   🔐 <b>Aplikasi Aman</b><br>
   Ini adalah aplikasi jualan resmi milik <b>Warung Zidan</b>.<br>
   Tidak mengandung virus atau malware.<br>
-  Saat ini belum diupload ke Play Store.
+  Belum tersedia di Play Store.
 </div>
 
 <div class="container">
@@ -89,8 +89,84 @@ placeholder="🔍 Cari produk..."
 style="width:100%;padding:10px;border-radius:10px;border:1px solid #ccc;margin-bottom:15px">
 
 <div class="produk-grid">
-
   <div class="produk" data-nama="kolang kaling">
     <img src="img/kolang.jpg">
     <h3>Kolang Kaling</h3>
-    <div class="harga">
+    <div class="harga">Rp 13.000 / kg</div>
+    <button onclick="tambahCart('Kolang Kaling',13000)">Tambah</button>
+  </div>
+
+  <div class="produk" data-nama="cireng ayam">
+    <img src="img/cireng.jpg">
+    <h3>Cireng Ayam</h3>
+    <div class="harga">Rp 1.000 / pcs</div>
+    <button onclick="tambahCart('Cireng Ayam',1000)">Tambah</button>
+  </div>
+
+  <div class="produk" data-nama="risol">
+    <img src="img/risol.jpg">
+    <h3>Risol</h3>
+    <div class="harga">Rp 1.000 / pcs</div>
+    <button onclick="tambahCart('Risol',1000)">Tambah</button>
+  </div>
+</div>
+
+<div class="checkout">
+  <h3>🧾 Checkout</h3>
+  <div id="checkoutList"></div>
+
+  <textarea id="catatan" rows="3"
+  placeholder="Catatan pembeli"
+  style="width:100%;padding:8px;border-radius:8px"></textarea>
+
+  <div class="checkout-total" id="checkoutTotal">Total: Rp 0</div>
+
+  <button onclick="tampilInvoice()">Checkout</button>
+  <button onclick="kosongkanCart()" style="background:#e53935;margin-top:6px">
+    🗑 Hapus Keranjang
+  </button>
+</div>
+
+<div id="invoice" style="display:none;margin-top:20px">
+  <div style="background:#fff;padding:15px;border-radius:15px">
+    <h3 style="text-align:center">🧾 INVOICE</h3>
+    <div id="invoiceList"></div>
+    <hr>
+    <b>Total: <span id="invoiceTotal"></span></b>
+    <p id="invoiceNote"></p>
+    <button onclick="kirimWA()">Kirim WhatsApp</button>
+  </div>
+</div>
+
+</div>
+
+<footer>© 2026 Warung Zidan</footer>
+
+<script src="script.js"></script>
+
+<script>
+document.getElementById("searchInput").addEventListener("input", function(){
+  const key=this.value.toLowerCase();
+  document.querySelectorAll(".produk").forEach(p=>{
+    p.style.display=p.dataset.nama.includes(key)?"":"none";
+  });
+});
+</script>
+
+<script>
+window.onload = function () {
+  if (!localStorage.getItem("apkAman")) {
+    alert(
+      "🔐 Aplikasi Warung Zidan AMAN\n\n" +
+      "✔ Aplikasi jualan resmi\n" +
+      "✔ Tidak mengandung virus\n" +
+      "✔ Belum tersedia di Play Store\n\n" +
+      "Terima kasih 🙏"
+    );
+    localStorage.setItem("apkAman","ok");
+  }
+};
+</script>
+
+</body>
+</html>
