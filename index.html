@@ -11,10 +11,9 @@
         body { font-family: 'Poppins', sans-serif; background-color: #f9fafb; -webkit-tap-highlight-color: transparent; }
         .product-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; }
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px; border-top: 1px solid #eee; z-index: 50; }
-        /* Perbaikan Modal & Tombol Close */
         .cart-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 9999; align-items: flex-end; }
         .modal-content { background: white; width: 100%; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px; position: relative; animation: slideUp 0.3s ease-out; }
-        .close-btn { position: absolute; top: 15px; right: 15px; width: 35px; height: 35px; background: #eee; border-radius: 50%; display: flex; items-center; justify-content: center; cursor: pointer; z-index: 10001; color: #333; }
+        .close-btn { position: absolute; top: 15px; right: 15px; width: 35px; height: 35px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10001; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
 </head>
@@ -24,7 +23,7 @@
         <div class="flex items-center justify-between gap-3">
             <div class="flex-1 bg-white flex items-center px-4 py-2 rounded-full shadow-inner">
                 <i class="fa fa-search text-gray-400 text-sm"></i>
-                <input type="text" placeholder="Cari jajanan..." class="ml-2 w-full outline-none text-xs bg-transparent">
+                <input type="text" id="search-input" onkeyup="searchProduct()" placeholder="Cari Risol, Cireng..." class="ml-2 w-full outline-none text-xs bg-transparent">
             </div>
             <button onclick="toggleCart()" class="relative text-white p-2">
                 <i class="fa fa-shopping-basket text-xl"></i>
@@ -35,6 +34,162 @@
 
     <div class="p-4">
         <div class="bg-gradient-to-r from-orange-500 to-orange-700 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+            <h1 class="text-xl font-bold italic">Warung Zidan</h1>
+            <p class="text-[10px] opacity-90">Jajanan Enak, Murah & Berkah</p>
+        </div>
+    </div>
+
+    <div class="px-4">
+        <h2 class="font-bold text-gray-800 mb-4 text-sm flex items-center gap-2">
+            <i class="fa fa-utensils text-orange-500"></i> Menu Jajanan
+        </h2>
+        <div class="grid grid-cols-2 gap-4" id="product-container">
+            </div>
+    </div>
+
+    <nav class="bottom-nav shadow-lg">
+        <div onclick="location.reload()" class="flex flex-col items-center text-orange-600">
+            <i class="fa fa-home text-xl"></i>
+            <span class="text-[10px] mt-1 font-bold">Home</span>
+        </div>
+        <div onclick="toggleCart()" class="flex flex-col items-center text-gray-400">
+            <i class="fa fa-shopping-cart text-xl"></i>
+            <span class="text-[10px] mt-1">Keranjang</span>
+        </div>
+    </nav>
+
+    <div id="cart-modal" class="cart-modal">
+        <div class="modal-content shadow-2xl">
+            <div onclick="toggleCart()" class="close-btn shadow">
+                <i class="fa fa-times text-gray-600"></i>
+            </div>
+            <h2 class="text-lg font-bold text-gray-800 mb-4">Keranjang Saya</h2>
+            <div id="cart-items" class="max-h-64 overflow-y-auto mb-6 pr-2"></div>
+            <div class="border-t pt-4">
+                <div class="flex justify-between items-center mb-6 px-1">
+                    <span class="text-gray-500 text-sm font-semibold">Total Tagihan:</span>
+                    <span id="total-price" class="text-xl font-bold text-orange-600">Rp 0</span>
+                </div>
+                <button onclick="checkoutWA()" class="w-full bg-green-500 text-white py-4 rounded-2xl font-bold shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-all">
+                    <i class="fab fa-whatsapp text-2xl"></i> CHECKOUT SEKARANG
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DATA PRODUK
+        const produk = [
+            { id: 1, nama: "Risol Spesial", harga: 3000, img: "img/risol.jpg" },
+            { id: 2, nama: "Kolang Kaling", harga: 10000, img: "img/kolang.jpg" },
+            { id: 3, nama: "Cireng Renyah", harga: 5000, img: "img/cireng.jpg" }
+        ];
+
+        let keranjang = [];
+
+        // FUNGSI TAMPILKAN PRODUK
+        function renderProduk(filteredData = produk) {
+            const container = document.getElementById('product-container');
+            if (filteredData.length === 0) {
+                container.innerHTML = '<p class="col-span-2 text-center text-gray-400 py-10 text-xs">Produk tidak ditemukan...</p>';
+                return;
+            }
+            container.innerHTML = filteredData.map(p => `
+                <div class="product-card">
+                    <img src="${p.img}" class="w-full h-28 object-cover" onerror="this.src='https://via.placeholder.com/150?text=Warung+Zidan'">
+                    <div class="p-3">
+                        <h3 class="text-[10px] font-bold text-gray-800 truncate">${p.nama}</h3>
+                        <p class="text-orange-600 font-bold text-xs mt-0.5">Rp ${p.harga.toLocaleString('id-ID')}</p>
+                        
+                        <div class="mt-3 flex flex-col gap-2">
+                            <button onclick="tambahKeKeranjang(${p.id})" class="w-full bg-orange-100 text-orange-600 py-1.5 rounded-lg text-[9px] font-bold border border-orange-200 active:bg-orange-200">
+                                + KERANJANG
+                            </button>
+                            <button onclick="beliLangsung(${p.id})" class="w-full bg-orange-500 text-white py-1.5 rounded-lg text-[9px] font-bold shadow-sm active:bg-orange-600">
+                                BELI SEKARANG
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // FUNGSI PENCARIAN
+        function searchProduct() {
+            const keyword = document.getElementById('search-input').value.toLowerCase();
+            const hasilCari = produk.filter(p => p.nama.toLowerCase().includes(keyword));
+            renderProduk(hasilCari);
+        }
+
+        function tambahKeKeranjang(id) {
+            const item = produk.find(p => p.id === id);
+            keranjang.push(item);
+            updateCart();
+            alert(item.nama + " ditambah ke keranjang!");
+        }
+
+        function beliLangsung(id) {
+            const item = produk.find(p => p.id === id);
+            const nomorWA = "6285158765900";
+            const pesan = `*ORDER LANGSUNG - WARUNG ZIDAN*\n\nSaya ingin beli: *${item.nama}*\nHarga: Rp ${item.harga.toLocaleString('id-ID')}\n\nMohon diproses segera!`;
+            window.location.href = "https://api.whatsapp.com/send?phone=" + nomorWA + "&text=" + encodeURIComponent(pesan);
+        }
+
+        function updateCart() {
+            document.getElementById('cart-count').innerText = keranjang.length;
+            const cartItems = document.getElementById('cart-items');
+            const totalPrice = document.getElementById('total-price');
+            
+            if(keranjang.length === 0) {
+                cartItems.innerHTML = '<p class="text-center text-gray-400 py-10 text-xs">Keranjang kosong</p>';
+                totalPrice.innerText = 'Rp 0';
+                return;
+            }
+
+            let total = 0;
+            cartItems.innerHTML = keranjang.map((item, index) => {
+                total += item.harga;
+                return `
+                    <div class="flex justify-between items-center mb-3 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                        <div class="flex items-center gap-2">
+                            <img src="${item.img}" class="w-8 h-8 rounded object-cover" onerror="this.style.display='none'">
+                            <p class="text-[10px] font-bold text-gray-800">${item.nama}</p>
+                        </div>
+                        <button onclick="hapusItem(${index})" class="text-red-500 p-1"><i class="fa fa-trash-alt text-xs"></i></button>
+                    </div>
+                `;
+            }).join('');
+            totalPrice.innerText = `Rp ${total.toLocaleString('id-ID')}`;
+        }
+
+        function hapusItem(index) {
+            keranjang.splice(index, 1);
+            updateCart();
+        }
+
+        function toggleCart() {
+            const modal = document.getElementById('cart-modal');
+            modal.style.display = (window.getComputedStyle(modal).display === 'none') ? 'flex' : 'none';
+        }
+
+        function checkoutWA() {
+            if(keranjang.length === 0) return alert("Keranjang kosong!");
+            const nomorWA = "6285158765900"; 
+            let rincian = "";
+            let total = 0;
+            keranjang.forEach((item, i) => {
+                rincian += `${i+1}. ${item.nama} (Rp ${item.harga.toLocaleString('id-ID')})\n`;
+                total += item.harga;
+            });
+            const pesan = `*ORDER KERANJANG - WARUNG ZIDAN*\n\n${rincian}\n*TOTAL: Rp ${total.toLocaleString('id-ID')}*\n\nSiap diproses?`;
+            window.location.href = "https://api.whatsapp.com/send?phone=" + nomorWA + "&text=" + encodeURIComponent(pesan);
+        }
+
+        // Render pertama kali
+        renderProduk();
+    </script>
+</body>
+</html>        <div class="bg-gradient-to-r from-orange-500 to-orange-700 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
             <h1 class="text-xl font-bold italic">Warung Zidan</h1>
             <p class="text-[10px] opacity-90">Camilan Enak, Harga Pelajar!</p>
             <i class="fa fa-cookie-bite absolute -right-2 -bottom-2 text-6xl opacity-20"></i>
@@ -190,3 +345,4 @@
     </script>
 </body>
 </html>
+
