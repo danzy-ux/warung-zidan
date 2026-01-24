@@ -1,4 +1,5 @@
-const CACHE_NAME = 'warung-zidan-v2'; // Ganti angka v2 setiap kali kamu update menu besar-besaran
+const CACHE_NAME = 'warung-zidan-v' + new Date().getTime(); // OTOMATIS UPDATE VERSI
+
 const ASSETS = [
   './',
   './index.html',
@@ -7,17 +8,29 @@ const ASSETS = [
   './icon-512.png'
 ];
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
+self.addEventListener('install', (e) => {
+  e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
-  self.skipWaiting(); // Memaksa update langsung aktif
+  self.skipWaiting();
 });
 
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    fetch(event.request).catch(() => {
-      return caches.match(event.request);
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key); // HAPUS CACHE LAMA OTOMATIS
+          }
+        })
+      );
     })
+  );
+});
+
+self.addEventListener('fetch', (e) => {
+  e.respondWith(
+    fetch(e.request).catch(() => caches.match(e.request))
   );
 });
