@@ -8,33 +8,205 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
-        body { font-family: 'Poppins', sans-serif; background-color: #f9fafb; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Poppins', sans-serif; background-color: #f8f9fa; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
         
-        /* TRIK SEMBUNYIKAN TULISAN APP */
-        .logo-container {
-            width: 40px;
-            height: 32px; /* Dibuat lebih pendek untuk memotong bagian bawah gambar */
-            overflow: hidden; /* Menyembunyikan tulisan APP di bawah */
-            border-radius: 6px;
-            display: flex;
-            align-items: flex-start; /* Gambar menempel ke atas */
-            border: 2px solid white;
-        }
-        .header-logo-img {
-            width: 100%;
-            transform: scale(1.2); /* Sedikit diperbesar agar tulisan terdorong keluar frame */
+        /* Animasi Terbang */
+        .fly-item { position: fixed; z-index: 9999; width: 30px; height: 30px; background: #f97316; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; pointer-events: none; transition: all 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        
+        /* Modal Style */
+        .cart-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 9999; align-items: flex-end; }
+        .modal-content { background: white; width: 100%; border-top-left-radius: 28px; border-top-right-radius: 28px; padding: 24px; position: relative; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        
+        /* Tombol Beli & qty */
+        .btn-qty { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid #e5e7eb; background: white; font-weight: bold; }
+        .product-card { transition: transform 0.2s; border: 1px solid #f0f0f0; }
+        .product-card:active { transform: scale(0.98); }
+    </style>
+</head>
+<body class="pb-24">
+
+    <header class="bg-orange-500 p-4 sticky top-0 z-40 shadow-lg">
+        <div class="flex items-center justify-between gap-3">
+            <div class="w-10 h-10 bg-white rounded-xl shadow-md flex items-center justify-center">
+                <i class="fa fa-utensils text-orange-500 text-xl"></i>
+            </div>
+            
+            <div class="flex-1 bg-white flex items-center px-4 py-2 rounded-full shadow-inner">
+                <i class="fa fa-search text-gray-400 text-sm"></i>
+                <input type="text" id="search-input" onkeyup="searchProduct()" placeholder="Cari jajanan..." class="ml-2 w-full outline-none text-xs bg-transparent">
+            </div>
+            
+            <button onclick="toggleCart()" id="cart-icon-container" class="relative text-white p-2">
+                <i class="fa fa-shopping-basket text-2xl"></i>
+                <span id="cart-count" class="absolute top-0 right-0 bg-yellow-400 text-orange-900 text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-orange-500">0</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="p-4">
+        <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl p-6 text-white shadow-xl flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold italic tracking-tighter">WARUNG ZIDAN</h1>
+                <p class="text-[10px] font-medium opacity-90 bg-black/10 inline-block px-2 py-0.5 rounded-full">HITS & FRESH EVERYDAY</p>
+            </div>
+            <i class="fa fa-store text-white/20 text-5xl rotate-12"></i>
+        </div>
+    </div>
+
+    <div class="px-4">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-bold text-gray-800 text-sm italic">Menu Spesial</h2>
+            <span class="text-[10px] text-orange-500 font-bold uppercase">Harga Pas di Kantong</span>
+        </div>
+        <div class="grid grid-cols-2 gap-4" id="product-container">
+            </div>
+    </div>
+
+    <nav class="fixed bottom-0 w-full bg-white flex justify-around py-3 border-t z-50 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+        <div onclick="location.reload()" class="flex flex-col items-center text-orange-600">
+            <i class="fa fa-home text-xl"></i>
+            <span class="text-[10px] mt-1 font-bold">Home</span>
+        </div>
+        <div onclick="toggleCart()" class="flex flex-col items-center text-gray-400">
+            <i class="fa fa-receipt text-xl"></i>
+            <span class="text-[10px] mt-1">Pesanan</span>
+        </div>
+    </nav>
+
+    <div id="cart-modal" class="cart-modal">
+        <div class="modal-content">
+            <div onclick="toggleCart()" class="absolute top-4 right-4 bg-gray-100 p-2 rounded-full w-8 h-8 flex items-center justify-center">
+                <i class="fa fa-times text-gray-500"></i>
+            </div>
+            <h2 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Keranjang Saya</h2>
+            <div id="cart-items" class="max-h-80 overflow-y-auto mb-6 pr-1"></div>
+            <div class="border-t pt-4">
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-gray-500 text-sm font-semibold">Total Bayar:</span>
+                    <span id="total-price" class="text-xl font-bold text-orange-600">Rp 0</span>
+                </div>
+                <button onclick="checkoutWA()" class="w-full bg-green-500 text-white py-4 rounded-2xl font-bold shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-all">
+                    <i class="fab fa-whatsapp text-2xl"></i> PESAN VIA WHATSAPP
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DATA PRODUK DENGAN HARGA BARU
+        const produk = [
+            { id: 1, nama: "Risol Spesial", harga: 1000, img: "img/risol.jpg" },
+            { id: 2, nama: "Kolang Kaling", harga: 13000, img: "img/kolang.jpg" },
+            { id: 3, nama: "Cireng Renyah", harga: 1000, img: "img/cireng.jpg" }
+        ];
+
+        let keranjang = {};
+
+        function renderProduk(filteredData = produk) {
+            const container = document.getElementById('product-container');
+            container.innerHTML = filteredData.map(p => `
+                <div class="product-card bg-white rounded-2xl overflow-hidden shadow-sm">
+                    <img src="${p.img}" class="w-full h-28 object-cover" onerror="this.src='https://via.placeholder.com/150?text=Warung+Zidan'">
+                    <div class="p-3">
+                        <h3 class="text-[10px] font-bold text-gray-800 truncate">${p.nama}</h3>
+                        <p class="text-orange-600 font-bold text-xs">Rp ${p.harga.toLocaleString('id-ID')}</p>
+                        <div class="mt-3 grid grid-cols-2 gap-1">
+                            <button onclick="animateToCart(event, ${p.id}, 5)" class="bg-blue-50 text-blue-600 text-[8px] font-bold py-1 rounded-md">+5</button>
+                            <button onclick="animateToCart(event, ${p.id}, 10)" class="bg-blue-50 text-blue-600 text-[8px] font-bold py-1 rounded-md">+10</button>
+                            <button onclick="animateToCart(event, ${p.id}, 1)" class="col-span-2 bg-orange-500 text-white py-2 rounded-lg text-[9px] font-bold mt-1 uppercase tracking-tighter">Tambah</button>
+                        </div>
+                    </div>
+                </div>`).join('');
         }
 
-        .banner-logo-container {
-            width: 65px;
-            height: 55px;
-            overflow: hidden;
-            border-radius: 50%;
-            border: 3px solid rgba(255,255,255,0.5);
+        function animateToCart(event, id, qty) {
+            const btn = event.currentTarget;
+            const cartIcon = document.getElementById('cart-icon-container');
+            const flyer = document.createElement('div');
+            flyer.className = 'fly-item shadow-lg';
+            flyer.innerHTML = `<i class="fa fa-plus text-[10px]"></i>`;
+            const rect = btn.getBoundingClientRect();
+            flyer.style.left = rect.left + 'px';
+            flyer.style.top = rect.top + 'px';
+            document.body.appendChild(flyer);
+            const cartRect = cartIcon.getBoundingClientRect();
+            setTimeout(() => {
+                flyer.style.left = cartRect.left + 'px';
+                flyer.style.top = cartRect.top + 'px';
+                flyer.style.transform = 'scale(0.1)';
+                flyer.style.opacity = '0';
+            }, 50);
+            setTimeout(() => {
+                flyer.remove();
+                updateQty(id, qty);
+            }, 700);
         }
 
-        /* UI SISA */
-        .product-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; position: relative; }
+        function updateQty(id, change) {
+            if (!keranjang[id]) keranjang[id] = 0;
+            keranjang[id] += change;
+            if (keranjang[id] <= 0) delete keranjang[id];
+            updateCart();
+        }
+
+        function updateCart() {
+            const cartItems = document.getElementById('cart-items');
+            const totalPrice = document.getElementById('total-price');
+            let total = 0, count = 0, html = '';
+
+            for (const id in keranjang) {
+                const p = produk.find(x => x.id == id);
+                const qty = keranjang[id];
+                total += (p.harga * qty);
+                count += qty;
+                html += `
+                    <div class="flex items-center justify-between mb-4 bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                        <div class="flex-1">
+                            <p class="text-xs font-bold text-gray-800">${p.nama}</p>
+                            <p class="text-[10px] text-orange-600 font-bold">Rp ${p.harga.toLocaleString('id-ID')}</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button onclick="updateQty(${p.id}, -1)" class="btn-qty shadow-sm">-</button>
+                            <span class="text-sm font-bold w-4 text-center">${qty}</span>
+                            <button onclick="updateQty(${p.id}, 1)" class="btn-qty shadow-sm text-orange-500">+</button>
+                        </div>
+                    </div>`;
+            }
+
+            document.getElementById('cart-count').innerText = count;
+            cartItems.innerHTML = html || '<div class="text-center py-10"><i class="fa fa-box-open text-gray-300 text-4xl mb-2"></i><p class="text-gray-400 text-xs italic">Belum ada pesanan</p></div>';
+            totalPrice.innerText = `Rp ${total.toLocaleString('id-ID')}`;
+        }
+
+        function searchProduct() {
+            const keyword = document.getElementById('search-input').value.toLowerCase();
+            renderProduk(produk.filter(p => p.nama.toLowerCase().includes(keyword)));
+        }
+
+        function toggleCart() {
+            const modal = document.getElementById('cart-modal');
+            modal.style.display = (window.getComputedStyle(modal).display === 'none') ? 'flex' : 'none';
+        }
+
+        function checkoutWA() {
+            if (Object.keys(keranjang).length === 0) return alert("Pilih menu dulu ya!");
+            let text = "*ORDER WARUNG ZIDAN*\n---------------------------\n";
+            let total = 0;
+            for (const id in keranjang) {
+                const p = produk.find(x => x.id == id);
+                const sub = p.harga * keranjang[id];
+                text += `✅ ${p.nama} (${keranjang[id]}x) = Rp ${sub.toLocaleString('id-ID')}\n`;
+                total += sub;
+            }
+            text += `---------------------------\n*TOTAL TAGIHAN: Rp ${total.toLocaleString('id-ID')}*`;
+            window.location.href = `https://api.whatsapp.com/send?phone=6285158765900&text=${encodeURIComponent(text)}`;
+        }
+
+        renderProduk();
+    </script>
+</body>
+</html>        .product-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; position: relative; }
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px; border-top: 1px solid #eee; z-index: 50; }
         .cart-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 9999; align-items: flex-end; }
         .modal-content { background: white; width: 100%; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px; position: relative; animation: slideUp 0.3s ease-out; }
@@ -221,3 +393,4 @@
     </script>
 </body>
 </html>
+
