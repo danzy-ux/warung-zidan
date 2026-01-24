@@ -3,159 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ea580c">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
     <title>Warung Zidan</title>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <style>
-        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #1e293b; -webkit-tap-highlight-color: transparent; }
-        .product-card { background: white; border-radius: 24px; border: 1px solid #f1f5f9; overflow: hidden; display: flex; flex-direction: column; }
-        /* Anti Bug Tulisan Nama Produk */
-        .product-card h3 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; width: 100%; }
-        
+        body { font-family: sans-serif; background-color: #f8fafc; color: #1e293b; -webkit-tap-highlight-color: transparent; }
+        .product-card { background: white; border-radius: 20px; border: 1px solid #f1f5f9; overflow: hidden; display: flex; flex-direction: column; }
+        .product-card h3 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
         .modal-base { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: flex-end; }
-        .modal-content { 
-            background: white; width: 100%; border-radius: 32px 32px 0 0; 
-            padding: 24px; animation: slideUp 0.3s cubic-bezier(0, 0, 0.2, 1); 
-            max-height: 85vh; overflow-y: auto; 
-        }
+        .modal-content { background: white; width: 100%; border-radius: 24px 24px 0 0; padding: 20px; animation: slideUp 0.3s ease-out; max-height: 85vh; overflow-y: auto; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        
-        .input-group { display: flex; align-items: center; background: #f1f5f9; border-radius: 16px; padding: 12px; margin-bottom: 10px; border: 1px solid transparent; transition: 0.2s; }
-        .input-group:focus-within { border-color: #ea580c; background: white; }
-        .input-group input, .input-group textarea { background: transparent; border: none; outline: none; width: 100%; margin-left: 10px; font-size: 14px; color: #334155; }
+        .input-box { width: 100%; background: #f1f5f9; border-radius: 12px; padding: 12px; margin-bottom: 10px; border: none; outline: none; font-size: 14px; }
     </style>
 </head>
 <body class="pb-10">
 
-    <header class="bg-orange-600 p-4 sticky top-0 z-50 shadow-md flex items-center justify-between gap-3">
-        <div class="w-10 h-10 bg-white rounded-xl overflow-hidden flex items-center justify-center border-2 border-white shadow-sm">
-            <img src="icon-192.png" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/100?text=WZ'">
+    <header class="bg-orange-600 p-4 sticky top-0 z-50 shadow-md flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <img src="icon-192.png" class="w-10 h-10 rounded-lg border-2 border-white" onerror="this.src='https://via.placeholder.com/100'">
+            <div class="bg-white/20 px-3 py-1.5 rounded-full flex items-center border border-white/30">
+                <i class="fa fa-search text-white/70 text-xs"></i>
+                <input type="text" onkeyup="searchProduct()" id="search" placeholder="Cari..." class="bg-transparent border-none outline-none ml-2 text-white text-sm w-24 placeholder-white/60">
+            </div>
         </div>
-        <div class="flex-1 bg-white/20 flex items-center px-4 py-2 rounded-full border border-white/30">
-            <i class="fa fa-search text-white/70 text-xs"></i>
-            <input type="text" onkeyup="searchProduct()" id="search-input" placeholder="Cari jajanan..." class="ml-2 w-full text-sm text-white outline-none bg-transparent placeholder-white/60">
-        </div>
-        <button onclick="toggleModal('cart-modal')" id="cart-btn" class="relative text-white bg-white/10 p-2 rounded-xl active:scale-90 transition-transform">
-            <i class="fa fa-shopping-bag text-xl"></i>
+        <button onclick="toggleModal('cart-modal')" class="relative text-white bg-white/20 p-2 rounded-xl">
+            <i class="fa fa-shopping-basket text-xl"></i>
             <span id="cart-count" class="absolute -top-1 -right-1 bg-yellow-400 text-orange-900 text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-orange-600">0</span>
         </button>
     </header>
 
     <main class="p-4">
-        <div class="bg-gradient-to-br from-orange-500 to-orange-700 rounded-[32px] p-8 text-white shadow-xl mb-6 text-center">
-            <h1 class="text-3xl font-black italic mb-1 tracking-tighter uppercase">WARUNG ZIDAN</h1>
-            <p class="text-[10px] opacity-80 font-bold uppercase tracking-widest">Jajanan Enak • Harga Merakyat</p>
+        <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-[32px] p-8 text-white mb-6 text-center shadow-lg">
+            <h1 class="text-2xl font-black italic">WARUNG ZIDAN</h1>
+            <p class="text-[10px] opacity-80 uppercase font-bold tracking-widest text-center">Jajanan Enak, Harga Merakyat</p>
         </div>
 
-        <div id="install-section" style="display: none;" class="mb-6 animate-pulse">
-            <button id="install-btn" class="w-full bg-white border-2 border-orange-500 p-4 rounded-2xl flex items-center justify-between shadow-sm active:bg-orange-50 transition-all">
-                <div class="flex items-center gap-3 text-left">
-                    <img src="icon-192.png" class="w-10 h-10 rounded-xl shadow-sm">
-                    <div>
-                        <p class="text-sm font-bold text-slate-800">Pasang Warung Zidan</p>
-                        <p class="text-[10px] text-slate-500 text-left">Simpan di layar utama biar gak nyari lagi</p>
-                    </div>
+        <div id="install-area" style="display: none;" class="mb-6">
+            <button id="install-button" class="w-full bg-white border-2 border-orange-500 p-4 rounded-2xl flex items-center justify-between shadow-sm">
+                <div class="flex items-center gap-3 text-left text-slate-800">
+                    <img src="icon-192.png" class="w-10 h-10 rounded-lg shadow-sm">
+                    <div><p class="text-sm font-bold">Pasang Aplikasi</p><p class="text-[10px] text-slate-500">Klik untuk simpan di layar utama</p></div>
                 </div>
                 <i class="fa fa-download text-orange-600 mr-2"></i>
             </button>
         </div>
 
-        <h2 class="font-bold text-slate-800 mb-5 flex items-center gap-2 px-1">
-            <div class="w-1.5 h-6 bg-orange-500 rounded-full"></div> Menu Jajanan
+        <h2 class="font-bold text-slate-800 mb-4 px-1 flex items-center gap-2">
+            <div class="w-1 h-5 bg-orange-500 rounded-full"></div> Menu Kami
         </h2>
-
         <div class="grid grid-cols-2 gap-4" id="product-container"></div>
     </main>
 
     <div id="cart-modal" class="modal-base" onclick="toggleModal('cart-modal')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
-            <h2 class="text-xl font-bold mb-6 text-slate-900 flex items-center gap-2">
-                <i class="fa fa-shopping-cart text-orange-600"></i> Rincian Belanja
-            </h2>
-            
-            <div class="input-group">
-                <i class="fa fa-user text-slate-400"></i>
-                <input type="text" id="buyer-name" placeholder="Nama Kamu (Biar gak ketuker)">
+            <h2 class="text-lg font-bold mb-4">Rincian Belanja</h2>
+            <input type="text" id="buyer-name" placeholder="Nama Kamu" class="input-box">
+            <input type="text" id="buyer-loc" placeholder="Alamat (Opsional)" class="input-box">
+            <textarea id="buyer-note" rows="2" placeholder="Catatan Tambahan" class="input-box"></textarea>
+            <div id="cart-items" class="space-y-2 mb-4"></div>
+            <div class="flex justify-between font-bold text-xl text-orange-600 mb-4 border-t pt-4">
+                <span>Total:</span> <span id="total-price">Rp 0</span>
             </div>
-            <div class="input-group">
-                <i class="fa fa-map-marker-alt text-slate-400"></i>
-                <input type="text" id="buyer-location" placeholder="Lokasi / Alamat (Opsional)">
-            </div>
-            <div class="input-group items-start">
-                <i class="fa fa-comment-dots text-slate-400 mt-1"></i>
-                <textarea id="buyer-note" rows="2" placeholder="Catatan: Risol gak pedas ya.."></textarea>
-            </div>
-
-            <div id="cart-items" class="space-y-3 my-5 max-h-56 overflow-y-auto pr-1"></div>
-            
-            <div class="flex justify-between items-center py-4 border-t border-dashed mt-4">
-                <span class="text-slate-500 font-medium">Total Bayar</span>
-                <span id="total-price" class="text-2xl font-black text-orange-600">Rp 0</span>
-            </div>
-
-            <button onclick="processOrder()" class="w-full bg-orange-600 text-white py-4.5 rounded-2xl font-bold shadow-lg shadow-orange-100 active:scale-95 transition-all flex items-center justify-center gap-2">
-                <i class="fa fa-paper-plane"></i> KIRIM PESANAN KE WHATSAPP
-            </button>
+            <button onclick="processOrder()" class="w-full bg-orange-600 text-white py-4 rounded-xl font-bold">PESAN VIA WHATSAPP</button>
         </div>
     </div>
 
     <script>
-        // DAFTAR SERVICE WORKER
+        // OTOMATIS UPDATE JIKA ADA PERUBAHAN DI GITHUB
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then(reg => console.log('SW Registered!'))
-                    .catch(err => console.log('SW Failed:', err));
+                navigator.serviceWorker.register('./service-worker.js').then(reg => {
+                    reg.addEventListener('updatefound', () => {
+                        const newWorker = reg.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                // Refresh otomatis saat update selesai didownload
+                                window.location.reload();
+                            }
+                        });
+                    });
+                });
             });
         }
 
-        // LOGIKA INSTAL PWA
         let deferredPrompt;
-        const installSection = document.getElementById('install-section');
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            installSection.style.display = 'block';
+            document.getElementById('install-area').style.display = 'block';
         });
 
-        document.getElementById('install-btn').addEventListener('click', () => {
+        document.getElementById('install-button').addEventListener('click', () => {
             if (deferredPrompt) {
-                installSection.style.display = 'none';
                 deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choice) => {
-                    if (choice.outcome === 'accepted') console.log('User installed app');
+                deferredPrompt.userChoice.then(() => {
+                    document.getElementById('install-area').style.display = 'none';
                     deferredPrompt = null;
                 });
             }
         });
 
         const produk = [
-            { id: 1, nama: "Risol Istimewa", harga: 1000, img: "img/risol.jpg" },
+            { id: 1, nama: "Risol", harga: 1000, img: "img/risol.jpg" },
             { id: 2, nama: "Kolang Kaling", harga: 13000, img: "img/kolang.jpg" },
-            { id: 3, nama: "Cireng Renyah", harga: 1000, img: "img/cireng.jpg" }
+            { id: 3, nama: "Cireng", harga: 1000, img: "img/cireng.jpg" }
         ];
 
         let keranjang = {};
 
         function renderProduk(data = produk) {
             document.getElementById('product-container').innerHTML = data.map(p => `
-                <div class="product-card p-2 shadow-sm bg-white">
-                    <img src="${p.img}" class="w-full h-36 object-cover rounded-2xl mb-3" onerror="this.src='https://via.placeholder.com/150?text=Jajanan'">
-                    <h3 class="text-sm font-bold text-slate-800 px-1">${p.nama}</h3>
-                    <p class="text-orange-600 font-black text-xs px-1 mb-3">Rp ${p.harga.toLocaleString('id-ID')}</p>
-                    <div class="grid grid-cols-2 gap-1.5 px-1">
-                        <button onclick="add(${p.id}, 5)" class="bg-blue-50 text-blue-600 text-[10px] font-bold py-2 rounded-xl active:bg-blue-100">+5</button>
-                        <button onclick="add(${p.id}, 1)" class="bg-orange-500 text-white py-2 rounded-xl text-[10px] font-bold active:bg-orange-600">+1</button>
-                        <button onclick="add(${p.id}, 10)" class="col-span-2 bg-slate-100 text-slate-600 py-2 rounded-xl text-[9px] font-bold uppercase mt-1">Beli 10</button>
+                <div class="product-card p-2 shadow-sm">
+                    <img src="${p.img}" class="w-full h-32 object-cover rounded-xl mb-2" onerror="this.src='https://via.placeholder.com/150'">
+                    <h3 class="text-sm font-bold">${p.nama}</h3>
+                    <p class="text-orange-600 font-bold text-xs mb-2">Rp ${p.harga.toLocaleString('id-ID')}</p>
+                    <div class="grid grid-cols-2 gap-1">
+                        <button onclick="add(${p.id}, 5)" class="bg-blue-50 text-blue-600 text-[10px] font-bold py-2 rounded-lg active:bg-blue-100">+5</button>
+                        <button onclick="add(${p.id}, 1)" class="bg-orange-500 text-white py-2 rounded-lg text-[10px] font-bold active:bg-orange-600">+1</button>
+                        <button onclick="add(${p.id}, 10)" class="col-span-2 bg-slate-100 text-slate-500 py-1.5 rounded-lg text-[9px] font-bold mt-1 uppercase">Beli 10</button>
                     </div>
                 </div>`).join('');
         }
@@ -171,264 +138,34 @@
                 const p = produk.find(x => x.id == id);
                 total += (p.harga * keranjang[id]);
                 count += keranjang[id];
-                html += `<div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <div class="text-left">
-                        <p class="text-xs font-bold text-slate-800">${p.nama}</p>
-                        <p class="text-[10px] text-slate-500">${keranjang[id]}x @ Rp ${p.harga.toLocaleString('id-ID')}</p>
-                    </div>
-                    <span class="text-orange-600 font-bold text-xs">Rp ${(p.harga * keranjang[id]).toLocaleString('id-ID')}</span>
-                </div>`;
+                html += `<div class="flex justify-between text-sm p-2 bg-slate-50 rounded-lg"><span>${p.nama} (${keranjang[id]}x)</span><b>Rp ${(p.harga * keranjang[id]).toLocaleString('id-ID')}</b></div>`;
             }
             document.getElementById('cart-count').innerText = count;
-            document.getElementById('cart-items').innerHTML = html || '<p class="text-center text-slate-400 py-6 text-xs italic">Keranjang masih kosong nih..</p>';
             document.getElementById('total-price').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+            document.getElementById('cart-items').innerHTML = html || '<p class="text-center text-slate-400 py-4 italic text-xs">Keranjang kosong..</p>';
         }
 
         function processOrder() {
-            if (Object.keys(keranjang).length === 0) return alert("Pilih jajanan dulu yuk!");
-            
-            const name = document.getElementById('buyer-name').value || '-';
-            const loc = document.getElementById('buyer-location').value || '-';
-            const note = document.getElementById('buyer-note').value || '-';
-
-            let msg = `*ORDER WARUNG ZIDAN*\n\n`;
-            msg += `👤 Nama: ${name}\n`;
-            msg += `📍 Alamat: ${loc}\n`;
-            msg += `---------------------------\n`;
-            
+            if (Object.keys(keranjang).length === 0) return alert("Pilih menu dulu!");
+            let msg = `*ORDER WARUNG ZIDAN*\nNama: ${document.getElementById('buyer-name').value || '-'}\nAlamat: ${document.getElementById('buyer-loc').value || '-'}\n\n`;
             for (const id in keranjang) {
                 const p = produk.find(x => x.id == id);
                 msg += `• ${p.nama} (${keranjang[id]}x)\n`;
             }
-            
-            msg += `---------------------------\n`;
-            msg += `💰 *TOTAL: ${document.getElementById('total-price').innerText}*\n`;
-            msg += `📝 Catatan: ${note}`;
-
+            msg += `\n*TOTAL: ${document.getElementById('total-price').innerText}*\nCatatan: ${document.getElementById('buyer-note').value || '-'}`;
             window.location.href = `https://wa.me/6285158765900?text=${encodeURIComponent(msg)}`;
         }
 
         function toggleModal(id) {
             const m = document.getElementById(id);
-            const isFlex = m.style.display === 'flex';
-            m.style.display = isFlex ? 'none' : 'flex';
-            document.body.style.overflow = isFlex ? 'auto' : 'hidden';
+            m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
         }
 
         function searchProduct() {
-            const key = document.getElementById('search-input').value.toLowerCase();
+            const key = document.getElementById('search').value.toLowerCase();
             renderProduk(produk.filter(p => p.nama.toLowerCase().includes(key)));
         }
-
-        renderProduk();
-    </script>
-</body>
-</html>            background: white; width: 100%; border-radius: 28px 28px 0 0; 
-            padding: 24px; animation: slideUp 0.3s ease-out; 
-            max-height: 85vh; overflow-y: auto; 
-        }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-        /* Desain Input Tanpa Garis Tebal */
-        .input-group {
-            display: flex; align-items: center; background: #f1f5f9;
-            border: 1.5px solid transparent; border-radius: 16px;
-            padding: 12px 14px; margin-bottom: 10px; transition: 0.2s;
-        }
-        .input-group:focus-within {
-            border-color: #ea580c; background: white;
-            box-shadow: 0 4px 12px rgba(234, 88, 12, 0.08);
-        }
-        .input-group input, .input-group textarea {
-            background: transparent; border: none !important; outline: none !important;
-            width: 100%; margin-left: 10px; font-size: 14px; color: #334155;
-        }
-
-        /* Card Produk Anti Tumpang Tindih */
-        .product-card { background: white; border-radius: 24px; border: 1px solid #f1f5f9; overflow: hidden; }
-        .product-card h3 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        /* Animasi Terbang */
-        .fly-item { position: fixed; z-index: 9999; width: 15px; height: 15px; background: #ea580c; border-radius: 50%; pointer-events: none; transition: all 0.5s ease-in; }
-    </style>
-</head>
-<body class="pb-10">
-
-    <header class="bg-orange-600 p-4 sticky top-0 z-50 shadow-md">
-        <div class="flex items-center justify-between gap-3">
-            <div class="w-10 h-10 bg-white rounded-xl overflow-hidden flex items-center justify-center shadow-sm">
-                <img src="img/logo.jpg" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/100?text=WZ'">
-            </div>
-            
-            <div class="flex-1 bg-white/20 flex items-center px-4 py-2 rounded-full border border-white/30 search-container">
-                <i class="fa fa-search text-white/80 text-xs"></i>
-                <input type="text" onkeyup="searchProduct()" id="search-input" placeholder="Cari jajanan..." class="ml-2 w-full text-sm text-white placeholder-white/60">
-            </div>
-
-            <button onclick="toggleModal('cart-modal')" id="cart-btn" class="relative text-white bg-white/10 p-2 rounded-xl">
-                <i class="fa fa-shopping-bag text-xl"></i>
-                <span id="cart-count" class="absolute -top-1 -right-1 bg-yellow-400 text-orange-900 text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-orange-600">0</span>
-            </button>
-        </div>
-    </header>
-
-    <main class="p-4">
-        <div class="bg-gradient-to-br from-orange-500 to-orange-700 rounded-[32px] p-8 text-white shadow-xl mb-8 text-center relative">
-            <h1 class="text-3xl font-black italic tracking-tighter mb-1">WARUNG ZIDAN</h1>
-            <p class="text-[10px] opacity-80 font-bold tracking-widest uppercase">Jajanan Enak • Harga Merakyat</p>
-        </div>
-
-        <h2 class="font-bold text-slate-800 mb-5 flex items-center gap-2 px-1 text-lg">
-            <i class="fa fa-fire text-orange-500"></i> Menu Jajanan
-        </h2>
-
-        <div class="grid grid-cols-2 gap-4" id="product-container"></div>
-    </main>
-
-    <div id="cart-modal" class="modal-base" onclick="closeModalOnOutsideClick(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
-            <h2 class="text-xl font-bold mb-6 text-slate-900 flex items-center gap-2">
-                <i class="fa fa-shopping-cart text-orange-600"></i> Rincian Belanja
-            </h2>
-            
-            <div class="input-group">
-                <i class="fa fa-user-circle text-slate-400"></i>
-                <input type="text" id="buyer-name" placeholder="Nama Kamu (Opsional)">
-            </div>
-            <div class="input-group">
-                <i class="fa fa-phone text-slate-400"></i>
-                <input type="tel" id="buyer-phone" placeholder="No. WhatsApp (Opsional)">
-            </div>
-            <div class="input-group">
-                <i class="fa fa-map-marker-alt text-slate-400"></i>
-                <input type="text" id="buyer-location" placeholder="Lokasi Pengiriman (Opsional)">
-            </div>
-            <div class="input-group items-start">
-                <i class="fa fa-comment-dots text-slate-400 mt-1"></i>
-                <textarea id="buyer-note" rows="2" class="resize-none" placeholder="Catatan: Contoh (Risol jangan pedas)"></textarea>
-            </div>
-
-            <div id="cart-items" class="space-y-3 my-5 max-h-56 overflow-y-auto pr-1"></div>
-            
-            <div class="flex justify-between items-center py-4 border-t border-dashed mt-4">
-                <span class="text-slate-500 font-medium">Total Bayar</span>
-                <span id="total-price" class="text-2xl font-black text-orange-600">Rp 0</span>
-            </div>
-
-            <button onclick="processOrder()" class="w-full bg-orange-600 text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3">
-                <i class="fa fa-paper-plane"></i> PESAN SEKARANG
-            </button>
-        </div>
-    </div>
-
-    <script>
-        const produk = [
-            { id: 1, nama: "Risol Istimewa", harga: 1000, img: "img/risol.jpg" },
-            { id: 2, nama: "Kolang Kaling", harga: 13000, img: "img/kolang.jpg" },
-            { id: 3, nama: "Cireng Renyah", harga: 1000, img: "img/cireng.jpg" }
-        ];
-
-        let keranjang = {};
-
-        function renderProduk(data = produk) {
-            document.getElementById('product-container').innerHTML = data.map(p => `
-                <div class="product-card p-2 relative shadow-sm bg-white">
-                    <img src="${p.img}" class="w-full h-36 object-cover rounded-2xl mb-3" onerror="this.src='https://via.placeholder.com/150?text=WarungZidan'">
-                    <h3 class="text-sm font-bold text-slate-800 px-1">${p.nama}</h3>
-                    <p class="text-orange-600 font-black text-sm px-1 mb-3">Rp ${p.harga.toLocaleString('id-ID')}</p>
-                    <div class="grid grid-cols-2 gap-1.5 px-1">
-                        <button onclick="addWithAnim(event, ${p.id}, 5)" class="bg-blue-50 text-blue-600 text-[10px] font-bold py-2 rounded-xl">+5</button>
-                        <button onclick="addWithAnim(event, ${p.id}, 1)" class="bg-orange-500 text-white py-2 rounded-xl text-[10px] font-bold">+1</button>
-                        <button onclick="addWithAnim(event, ${p.id}, 10)" class="col-span-2 bg-slate-100 text-slate-600 py-2 rounded-xl text-[9px] font-bold uppercase">Beli 10</button>
-                    </div>
-                </div>`).join('');
-        }
-
-        function addWithAnim(e, id, qty) {
-            const btn = e.currentTarget;
-            const flyer = document.createElement('div');
-            flyer.className = 'fly-item';
-            const rect = btn.getBoundingClientRect();
-            flyer.style.left = rect.left + 'px';
-            flyer.style.top = rect.top + 'px';
-            document.body.appendChild(flyer);
-            
-            const cartRect = document.getElementById('cart-btn').getBoundingClientRect();
-            setTimeout(() => {
-                flyer.style.left = (cartRect.left + 15) + 'px';
-                flyer.style.top = (cartRect.top + 15) + 'px';
-                flyer.style.opacity = '0';
-            }, 50);
-
-            setTimeout(() => {
-                flyer.remove();
-                keranjang[id] = (keranjang[id] || 0) + qty;
-                updateCartUI();
-            }, 500);
-        }
-
-        function updateCartUI() {
-            const list = document.getElementById('cart-items');
-            let total = 0, count = 0, html = '';
-            for (const id in keranjang) {
-                const p = produk.find(x => x.id == id);
-                total += (p.harga * keranjang[id]);
-                count += keranjang[id];
-                html += `<div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                            <div>
-                                <p class="text-xs font-bold text-slate-800">${p.nama}</p>
-                                <p class="text-[10px] text-slate-500">${keranjang[id]}x @ Rp ${p.harga.toLocaleString('id-ID')}</p>
-                            </div>
-                            <span class="text-orange-600 font-bold text-xs">Rp ${(p.harga * keranjang[id]).toLocaleString('id-ID')}</span>
-                         </div>`;
-            }
-            document.getElementById('cart-count').innerText = count;
-            list.innerHTML = html || '<div class="text-center py-8 text-slate-400 text-xs italic">Keranjang masih kosong..</div>';
-            document.getElementById('total-price').innerText = `Rp ${total.toLocaleString('id-ID')}`;
-        }
-
-        function processOrder() {
-            if (Object.keys(keranjang).length === 0) return alert("Pilih jajanan dulu!");
-            const name = document.getElementById('buyer-name').value || '-';
-            const phone = document.getElementById('buyer-phone').value || '-';
-            const loc = document.getElementById('buyer-location').value || '-';
-            const note = document.getElementById('buyer-note').value || '-';
-
-            let msg = `*ORDER WARUNG ZIDAN*\n\n`;
-            msg += `👤 Nama: ${name}\n`;
-            msg += `📞 No HP: ${phone}\n`;
-            msg += `📍 Alamat: ${loc}\n`;
-            msg += `---------------------------\n`;
-            for (const id in keranjang) {
-                const p = produk.find(x => x.id == id);
-                msg += `• ${p.nama} (${keranjang[id]}x)\n`;
-            }
-            msg += `---------------------------\n`;
-            msg += `💰 *TOTAL: ${document.getElementById('total-price').innerText}*\n`;
-            msg += `📝 Catatan: ${note}`;
-
-            window.location.href = `https://wa.me/6285158765900?text=${encodeURIComponent(msg)}`;
-        }
-
-        function toggleModal(id) {
-            const m = document.getElementById(id);
-            const isFlex = m.style.display === 'flex';
-            m.style.display = isFlex ? 'none' : 'flex';
-            document.body.style.overflow = isFlex ? 'auto' : 'hidden';
-        }
-
-        function closeModalOnOutsideClick(e) {
-            if (e.target.id === 'cart-modal') toggleModal('cart-modal');
-        }
-
-        function searchProduct() {
-            const key = document.getElementById('search-input').value.toLowerCase();
-            renderProduk(produk.filter(p => p.nama.toLowerCase().includes(key)));
-        }
-
         renderProduk();
     </script>
 </body>
 </html>
-
