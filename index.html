@@ -10,8 +10,25 @@
 
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#f1f1f1}
-header{background:linear-gradient(135deg,#1e7f34,#43a047);color:#fff;padding:18px;text-align:center}
+header{
+  background:linear-gradient(135deg,#1e7f34,#43a047);
+  color:#fff;padding:18px;text-align:center;
+  position:relative
+}
 .container{max-width:1100px;margin:15px auto;padding:10px}
+
+/* CART BADGE */
+#cartBadge{
+  position:absolute;
+  top:15px;
+  right:20px;
+  background:red;
+  color:#fff;
+  font-size:12px;
+  padding:3px 7px;
+  border-radius:50%;
+  display:none
+}
 
 /* PRODUK */
 .produk-grid{
@@ -33,17 +50,19 @@ header{background:linear-gradient(135deg,#1e7f34,#43a047);color:#fff;padding:18p
 }
 .produk h3{font-size:14px;margin:6px 0 2px}
 .harga{font-size:13px;color:#1e7f34;font-weight:bold}
-button{
+
+.btn{
   width:100%;
-  background:#25d366;
-  color:#fff;
   border:none;
   padding:7px;
   border-radius:7px;
   font-size:13px;
   cursor:pointer;
-  margin-top:6px
+  margin-top:6px;
+  color:#fff
 }
+.btn-cart{background:#25d366}
+.btn-buy{background:#ff9800}
 
 /* CHECKOUT */
 .checkout{
@@ -53,7 +72,13 @@ button{
   margin-top:25px;
   box-shadow:0 8px 20px rgba(0,0,0,.08)
 }
-.checkout-item{font-size:14px;margin-bottom:6px}
+.checkout-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:6px;
+  font-size:14px
+}
 .checkout-total{font-weight:bold;margin-top:10px}
 footer{text-align:center;font-size:13px;color:#777;padding:15px}
 </style>
@@ -64,6 +89,7 @@ footer{text-align:center;font-size:13px;color:#777;padding:15px}
 <header>
   <h1>Warung Zidan</h1>
   <p>Makanan Rumahan • Fresh Setiap Hari</p>
+  🛒 <span id="cartBadge">0</span>
 </header>
 
 <!-- INFO APK AMAN -->
@@ -74,11 +100,10 @@ footer{text-align:center;font-size:13px;color:#777;padding:15px}
   border-radius:10px;
   margin:15px;
   font-size:14px;
-  text-align:center;
-">
+  text-align:center">
   🔐 <b>Aplikasi Aman</b><br>
-  Ini adalah aplikasi jualan resmi milik <b>Warung Zidan</b>.<br>
-  Tidak mengandung virus atau malware.<br>
+  Aplikasi jualan resmi Warung Zidan.<br>
+  Tidak mengandung virus / malware.<br>
   Belum tersedia di Play Store.
 </div>
 
@@ -88,27 +113,82 @@ footer{text-align:center;font-size:13px;color:#777;padding:15px}
 placeholder="🔍 Cari produk..."
 style="width:100%;padding:10px;border-radius:10px;border:1px solid #ccc;margin-bottom:15px">
 
+<!-- PRODUK -->
 <div class="produk-grid">
+
   <div class="produk" data-nama="kolang kaling">
     <img src="img/kolang.jpg">
     <h3>Kolang Kaling</h3>
     <div class="harga">Rp 13.000 / kg</div>
-    <button onclick="tambahCart('Kolang Kaling',13000)">Tambah</button>
+    <button class="btn btn-cart" onclick="tambahCart('Kolang Kaling',13000)">
+      🛒 Tambah Keranjang
+    </button>
+    <button class="btn btn-buy" onclick="beliSekarang('Kolang Kaling',13000)">
+      ⚡ Beli Sekarang
+    </button>
   </div>
 
   <div class="produk" data-nama="cireng ayam">
     <img src="img/cireng.jpg">
     <h3>Cireng Ayam</h3>
     <div class="harga">Rp 1.000 / pcs</div>
-    <button onclick="tambahCart('Cireng Ayam',1000)">Tambah</button>
+    <button class="btn btn-cart" onclick="tambahCart('Cireng Ayam',1000)">
+      🛒 Tambah Keranjang
+    </button>
+    <button class="btn btn-buy" onclick="beliSekarang('Cireng Ayam',1000)">
+      ⚡ Beli Sekarang
+    </button>
   </div>
 
   <div class="produk" data-nama="risol">
     <img src="img/risol.jpg">
     <h3>Risol</h3>
     <div class="harga">Rp 1.000 / pcs</div>
-    <button onclick="tambahCart('Risol',1000)">Tambah</button>
+    <button class="btn btn-cart" onclick="tambahCart('Risol',1000)">
+      🛒 Tambah Keranjang
+    </button>
+    <button class="btn btn-buy" onclick="beliSekarang('Risol',1000)">
+      ⚡ Beli Sekarang
+    </button>
   </div>
+
+</div>
+
+<!-- CHECKOUT -->
+<div class="checkout">
+  <h3>🧾 Keranjang</h3>
+  <div id="checkoutList"></div>
+
+  <textarea id="catatan" rows="3"
+  placeholder="Catatan pembeli"
+  style="width:100%;padding:8px;border-radius:8px"></textarea>
+
+  <div class="checkout-total" id="checkoutTotal">Total: Rp 0</div>
+
+  <button class="btn btn-cart" onclick="tampilInvoice()">Checkout</button>
+  <button class="btn" style="background:#e53935" onclick="kosongkanCart()">
+    🗑 Hapus Keranjang
+  </button>
+</div>
+
+</div>
+
+<footer>© 2026 Warung Zidan</footer>
+
+<script src="script.js"></script>
+
+<!-- SEARCH -->
+<script>
+document.getElementById("searchInput").addEventListener("input",function(){
+  const k=this.value.toLowerCase();
+  document.querySelectorAll(".produk").forEach(p=>{
+    p.style.display=p.dataset.nama.includes(k)?"":"none";
+  });
+});
+</script>
+
+</body>
+</html>
 </div>
 
 <div class="checkout">
@@ -170,3 +250,4 @@ window.onload = function () {
 
 </body>
 </html>
+
