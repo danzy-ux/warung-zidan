@@ -159,3 +159,58 @@ function kurangQty(index) {
   simpanCart();
   renderCart();
 }
+// =========================
+// BADGE KERANJANG
+// =========================
+function updateBadge() {
+  const badge = document.getElementById("cartBadge");
+  const totalQty = cart.reduce((s, i) => s + i.qty, 0);
+
+  if (totalQty > 0) {
+    badge.style.display = "inline-block";
+    badge.innerText = totalQty;
+  } else {
+    badge.style.display = "none";
+  }
+}
+
+// =========================
+// TOAST
+// =========================
+function showToast() {
+  const toast = document.getElementById("toast");
+  toast.style.display = "block";
+  setTimeout(() => toast.style.display = "none", 1500);
+}
+
+// =========================
+// GANTI FUNGSI TAMBAH CART
+// =========================
+function tambahCart(nama, harga) {
+  const item = cart.find(p => p.nama === nama);
+
+  if (item) item.qty++;
+  else cart.push({ nama, harga, qty: 1 });
+
+  simpanCart();
+  renderCart();
+  updateBadge();
+  showToast();
+}
+
+// =========================
+// BELI SEKARANG
+// =========================
+function beliSekarang(nama, harga) {
+  cart = [{ nama, harga, qty: 1 }];
+  simpanCart();
+  renderCart();
+  updateBadge();
+
+  document.querySelector(".checkout")
+    .scrollIntoView({ behavior: "smooth" });
+}
+
+// LOAD
+renderCart();
+updateBadge();
