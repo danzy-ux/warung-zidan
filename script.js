@@ -1,5 +1,5 @@
 // =========================
-// CART WARUNG ZIDAN
+// CART WARUNG ZIDAN (FIXED)
 // =========================
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
@@ -8,7 +8,18 @@ function simpanCart() {
   localStorage.setItem("cart", JSON.stringify(cart));
 }
 
-// TAMBAH PRODUK
+// UPDATE BADGE
+function updateBadge() {
+  const badge = document.getElementById("cartBadge");
+  const totalQty = cart.reduce((a, b) => a + b.qty, 0);
+
+  if (badge) {
+    badge.innerText = totalQty;
+    badge.style.display = totalQty > 0 ? "inline-block" : "none";
+  }
+}
+
+// TAMBAH KE KERANJANG
 function tambahCart(nama, harga) {
   const item = cart.find(p => p.nama === nama);
 
@@ -20,32 +31,51 @@ function tambahCart(nama, harga) {
 
   simpanCart();
   renderCart();
+  updateBadge();
 }
 
-// KURANGI 1 QTY
+// BELI SEKARANG (langsung 1 item)
+function beliSekarang(nama, harga) {
+  cart = [{ nama, harga, qty: 1 }];
+  simpanCart();
+  renderCart();
+  updateBadge();
+  alert("Produk ditambahkan, silakan checkout");
+}
+
+// KURANGI QTY
 function kurangQty(index) {
-  if (cart[index].qty > 1) {
-    cart[index].qty -= 1;
-  } else {
-    cart.splice(index, 1);
-  }
+  cart[index].qty--;
+  if (cart[index].qty <= 0) cart.splice(index, 1);
 
   simpanCart();
   renderCart();
+  updateBadge();
 }
 
-// HAPUS SEMUA CART
+// TAMBAH QTY
+function tambahQty(index) {
+  cart[index].qty++;
+  simpanCart();
+  renderCart();
+  updateBadge();
+}
+
+// HAPUS SEMUA
 function kosongkanCart() {
   if (!confirm("Hapus semua isi keranjang?")) return;
   cart = [];
   simpanCart();
   renderCart();
+  updateBadge();
 }
 
 // TAMPILKAN CART
 function renderCart() {
   const list = document.getElementById("checkoutList");
   const totalEl = document.getElementById("checkoutTotal");
+
+  if (!list || !totalEl) return;
 
   list.innerHTML = "";
   let total = 0;
@@ -56,161 +86,23 @@ function renderCart() {
 
     const div = document.createElement("div");
     div.className = "checkout-item";
-    div.style.display = "flex";
-    div.style.justifyContent = "space-between";
-    div.style.alignItems = "center";
-    div.style.marginBottom = "6px";
-
     div.innerHTML = `
       <span>
-        ${item.nama} 
-        <b>x ${item.qty}</b><br>
-        <small>Rp ${subtotal.toLocaleString("id-ID")}</small>
+        <b>${item.nama}</b><br>
+        Rp ${subtotal.toLocaleString("id-ID")}
       </span>
-
-      <button
-        onclick="kurangQty(${index})"
-        style="
-          background:#e53935;
-          border:none;
-          color:#fff;
-          padding:6px 10px;
-          border-radius:6px;
-          cursor:pointer
-        ">
-        −
-      </button>
+      <div>
+        <button onclick="kurangQty(${index})">−</button>
+        <b>${item.qty}</b>
+        <button onclick="tambahQty(${index})">+</button>
+      </div>
     `;
-
     list.appendChild(div);
   });
 
   totalEl.innerText = "Total: Rp " + total.toLocaleString("id-ID");
 }
 
-// INVOICE
-function tampilInvoice() {
-  if (cart.length === 0) {
-    alert("Keranjang masih kosong");
-    return;
-  }
-
-  document.getElementById("invoice").style.display = "block";
-
-  const list = document.getElementById("invoiceList");
-  const totalEl = document.getElementById("invoiceTotal");
-  const note = document.getElementById("invoiceNote");
-
-  list.innerHTML = "";
-  let total = 0;
-
-  cart.forEach(item => {
-    const subtotal = item.harga * item.qty;
-    total += subtotal;
-
-    const div = document.createElement("div");
-    div.innerHTML = `
-      ${item.nama} x ${item.qty}
-      <b>Rp ${subtotal.toLocaleString("id-ID")}</b>
-    `;
-    list.appendChild(div);
-  });
-
-  totalEl.innerText = "Rp " + total.toLocaleString("id-ID");
-  note.innerText = "Catatan: " + document.getElementById("catatan").value;
-}
-
-// KIRIM WHATSAPP
-function kirimWA() {
-  let pesan = "🧾 *Pesanan Warung Zidan*\n\n";
-  let total = 0;
-
-  cart.forEach(item => {
-    const subtotal = item.harga * item.qty;
-    total += subtotal;
-    pesan += `• ${item.nama} x ${item.qty} = Rp ${subtotal.toLocaleString("id-ID")}\n`;
-  });
-
-  pesan += `\nTotal: Rp ${total.toLocaleString("id-ID")}`;
-  pesan += `\nCatatan: ${document.getElementById("catatan").value}`;
-
-  const nomorWA = "6281234567890"; // GANTI
-  window.open(`https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`);
-}
-
 // LOAD SAAT BUKA
-renderCart();
-// =========================
-// TAMBAH & KURANGI PER ITEM
-// =========================
-function tambahQty(index) {
-  cart[index].qty += 1;
-  simpanCart();
-  renderCart();
-}
-
-function kurangQty(index) {
-  cart[index].qty -= 1;
-
-  if (cart[index].qty <= 0) {
-    cart.splice(index, 1);
-  }
-
-  simpanCart();
-  renderCart();
-}
-// =========================
-// BADGE KERANJANG
-// =========================
-function updateBadge() {
-  const badge = document.getElementById("cartBadge");
-  const totalQty = cart.reduce((s, i) => s + i.qty, 0);
-
-  if (totalQty > 0) {
-    badge.style.display = "inline-block";
-    badge.innerText = totalQty;
-  } else {
-    badge.style.display = "none";
-  }
-}
-
-// =========================
-// TOAST
-// =========================
-function showToast() {
-  const toast = document.getElementById("toast");
-  toast.style.display = "block";
-  setTimeout(() => toast.style.display = "none", 1500);
-}
-
-// =========================
-// GANTI FUNGSI TAMBAH CART
-// =========================
-function tambahCart(nama, harga) {
-  const item = cart.find(p => p.nama === nama);
-
-  if (item) item.qty++;
-  else cart.push({ nama, harga, qty: 1 });
-
-  simpanCart();
-  renderCart();
-  updateBadge();
-  showToast();
-}
-
-// =========================
-// BELI SEKARANG
-// =========================
-function beliSekarang(nama, harga) {
-  cart = [{ nama, harga, qty: 1 }];
-  simpanCart();
-  renderCart();
-  updateBadge();
-
-  document.querySelector(".checkout")
-    .scrollIntoView({ behavior: "smooth" });
-}
-
-// LOAD
 renderCart();
 updateBadge();
