@@ -10,12 +10,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { font-family: sans-serif; background-color: #f8fafc; color: #1e293b; -webkit-tap-highlight-color: transparent; }
-        .product-card { background: white; border-radius: 20px; border: 1px solid #f1f5f9; overflow: hidden; display: flex; flex-direction: column; }
-        .product-card h3 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
+        .product-card { background: white; border-radius: 20px; transition: transform 0.1s; }
+        .product-card:active { transform: scale(0.95); }
         .modal-base { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: flex-end; }
-        .modal-content { background: white; width: 100%; border-radius: 24px 24px 0 0; padding: 20px; animation: slideUp 0.3s ease-out; max-height: 85vh; overflow-y: auto; }
+        .modal-content { background: white; width: 100%; border-radius: 24px 24px 0 0; padding: 20px; animation: slideUp 0.3s ease-out; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .input-box { width: 100%; background: #f1f5f9; border-radius: 12px; padding: 12px; margin-bottom: 10px; border: none; outline: none; font-size: 14px; }
+        /* Animasi Keranjang */
+        .bounce { animation: bounce 0.4s ease; }
+        @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.3); } }
+        .input-box { width: 100%; background: #f1f5f9; border-radius: 12px; padding: 12px; margin-bottom: 10px; border: none; outline: none; }
     </style>
 </head>
 <body class="pb-10">
@@ -28,7 +31,7 @@
                 <input type="text" onkeyup="searchProduct()" id="search" placeholder="Cari..." class="bg-transparent border-none outline-none ml-2 text-white text-sm w-24 placeholder-white/60">
             </div>
         </div>
-        <button onclick="toggleModal('cart-modal')" class="relative text-white bg-white/20 p-2 rounded-xl">
+        <button onclick="toggleModal('cart-modal')" id="cart-btn" class="relative text-white bg-white/20 p-2 rounded-xl">
             <i class="fa fa-shopping-basket text-xl"></i>
             <span id="cart-count" class="absolute -top-1 -right-1 bg-yellow-400 text-orange-900 text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-orange-600">0</span>
         </button>
@@ -42,9 +45,9 @@
 
         <div id="install-area" style="display: none;" class="mb-6">
             <button id="install-button" class="w-full bg-white border-2 border-orange-500 p-4 rounded-2xl flex items-center justify-between shadow-sm">
-                <div class="flex items-center gap-3 text-left text-slate-800">
-                    <img src="icon-192.png" class="w-10 h-10 rounded-lg shadow-sm">
-                    <div><p class="text-sm font-bold">Pasang Aplikasi</p><p class="text-[10px] text-slate-500">Klik untuk simpan di layar utama</p></div>
+                <div class="flex items-center gap-3 text-left">
+                    <img src="icon-192.png" class="w-10 h-10 rounded-lg">
+                    <div><p class="text-sm font-bold text-slate-800">Pasang Aplikasi</p><p class="text-[10px] text-slate-500">Akses lebih cepat & ringan</p></div>
                 </div>
                 <i class="fa fa-download text-orange-600 mr-2"></i>
             </button>
@@ -58,50 +61,35 @@
 
     <div id="cart-modal" class="modal-base" onclick="toggleModal('cart-modal')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h2 class="text-lg font-bold mb-4">Rincian Belanja</h2>
+            <h2 class="text-lg font-bold mb-4">🛒 Pesanan Kamu</h2>
             <input type="text" id="buyer-name" placeholder="Nama Kamu" class="input-box">
-            <input type="text" id="buyer-loc" placeholder="Alamat (Opsional)" class="input-box">
-            <textarea id="buyer-note" rows="2" placeholder="Catatan Tambahan" class="input-box"></textarea>
-            <div id="cart-items" class="space-y-2 mb-4"></div>
+            <textarea id="buyer-note" rows="2" placeholder="Catatan (Contoh: Risol 2 pedas)" class="input-box"></textarea>
+            <div id="cart-items" class="space-y-2 mb-4 max-h-40 overflow-y-auto"></div>
             <div class="flex justify-between font-bold text-xl text-orange-600 mb-4 border-t pt-4">
                 <span>Total:</span> <span id="total-price">Rp 0</span>
             </div>
-            <button onclick="processOrder()" class="w-full bg-orange-600 text-white py-4 rounded-xl font-bold">PESAN VIA WHATSAPP</button>
+            <button onclick="processOrder()" class="w-full bg-orange-600 text-white py-4 rounded-xl font-bold active:bg-orange-700">KIRIM KE WHATSAPP</button>
         </div>
     </div>
 
     <script>
-        // OTOMATIS UPDATE JIKA ADA PERUBAHAN DI GITHUB
+        // DAFTAR SERVICE WORKER
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js').then(reg => {
-                    reg.addEventListener('updatefound', () => {
-                        const newWorker = reg.installing;
-                        newWorker.addEventListener('statechange', () => {
-                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                // Refresh otomatis saat update selesai didownload
-                                window.location.reload();
-                            }
-                        });
-                    });
-                });
-            });
+            navigator.serviceWorker.register('./service-worker.js');
         }
 
+        // LOGIKA INSTAL
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
             document.getElementById('install-area').style.display = 'block';
         });
-
         document.getElementById('install-button').addEventListener('click', () => {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
-                deferredPrompt.userChoice.then(() => {
-                    document.getElementById('install-area').style.display = 'none';
-                    deferredPrompt = null;
-                });
+                deferredPrompt = null;
+                document.getElementById('install-area').style.display = 'none';
             }
         });
 
@@ -113,15 +101,15 @@
 
         let keranjang = {};
 
-        function renderProduk(data = produk) {
-            document.getElementById('product-container').innerHTML = data.map(p => `
-                <div class="product-card p-2 shadow-sm">
+        function renderProduk() {
+            document.getElementById('product-container').innerHTML = produk.map(p => `
+                <div class="product-card p-2 shadow-sm border border-slate-100">
                     <img src="${p.img}" class="w-full h-32 object-cover rounded-xl mb-2" onerror="this.src='https://via.placeholder.com/150'">
-                    <h3 class="text-sm font-bold">${p.nama}</h3>
+                    <h3 class="text-sm font-bold text-slate-800">${p.nama}</h3>
                     <p class="text-orange-600 font-bold text-xs mb-2">Rp ${p.harga.toLocaleString('id-ID')}</p>
                     <div class="grid grid-cols-2 gap-1">
-                        <button onclick="add(${p.id}, 5)" class="bg-blue-50 text-blue-600 text-[10px] font-bold py-2 rounded-lg active:bg-blue-100">+5</button>
-                        <button onclick="add(${p.id}, 1)" class="bg-orange-500 text-white py-2 rounded-lg text-[10px] font-bold active:bg-orange-600">+1</button>
+                        <button onclick="add(${p.id}, 5)" class="bg-blue-50 text-blue-600 text-[10px] font-bold py-2 rounded-lg">+5</button>
+                        <button onclick="add(${p.id}, 1)" class="bg-orange-500 text-white py-2 rounded-lg text-[10px] font-bold">+1</button>
                         <button onclick="add(${p.id}, 10)" class="col-span-2 bg-slate-100 text-slate-500 py-1.5 rounded-lg text-[9px] font-bold mt-1 uppercase">Beli 10</button>
                     </div>
                 </div>`).join('');
@@ -129,6 +117,10 @@
 
         function add(id, qty) {
             keranjang[id] = (keranjang[id] || 0) + qty;
+            // Trigger Animasi Keranjang
+            const btn = document.getElementById('cart-btn');
+            btn.classList.add('bounce');
+            setTimeout(() => btn.classList.remove('bounce'), 400);
             updateUI();
         }
 
@@ -142,17 +134,19 @@
             }
             document.getElementById('cart-count').innerText = count;
             document.getElementById('total-price').innerText = `Rp ${total.toLocaleString('id-ID')}`;
-            document.getElementById('cart-items').innerHTML = html || '<p class="text-center text-slate-400 py-4 italic text-xs">Keranjang kosong..</p>';
+            document.getElementById('cart-items').innerHTML = html || '<p class="text-center text-slate-400 py-4">Kosong..</p>';
         }
 
         function processOrder() {
             if (Object.keys(keranjang).length === 0) return alert("Pilih menu dulu!");
-            let msg = `*ORDER WARUNG ZIDAN*\nNama: ${document.getElementById('buyer-name').value || '-'}\nAlamat: ${document.getElementById('buyer-loc').value || '-'}\n\n`;
+            const nama = document.getElementById('buyer-name').value || 'Pelanggan';
+            const catatan = document.getElementById('buyer-note').value || '-';
+            let msg = `*PESANAN WARUNG ZIDAN*\nNama: ${nama}\n\n`;
             for (const id in keranjang) {
                 const p = produk.find(x => x.id == id);
                 msg += `• ${p.nama} (${keranjang[id]}x)\n`;
             }
-            msg += `\n*TOTAL: ${document.getElementById('total-price').innerText}*\nCatatan: ${document.getElementById('buyer-note').value || '-'}`;
+            msg += `\n*TOTAL: ${document.getElementById('total-price').innerText}*\nCatatan: ${catatan}`;
             window.location.href = `https://wa.me/6285158765900?text=${encodeURIComponent(msg)}`;
         }
 
@@ -163,8 +157,20 @@
 
         function searchProduct() {
             const key = document.getElementById('search').value.toLowerCase();
-            renderProduk(produk.filter(p => p.nama.toLowerCase().includes(key)));
+            const filtered = produk.filter(p => p.nama.toLowerCase().includes(key));
+            document.getElementById('product-container').innerHTML = filtered.map(p => `
+                <div class="product-card p-2 shadow-sm border border-slate-100">
+                    <img src="${p.img}" class="w-full h-32 object-cover rounded-xl mb-2" onerror="this.src='https://via.placeholder.com/150'">
+                    <h3 class="text-sm font-bold text-slate-800">${p.nama}</h3>
+                    <p class="text-orange-600 font-bold text-xs mb-2">Rp ${p.harga.toLocaleString('id-ID')}</p>
+                    <div class="grid grid-cols-2 gap-1">
+                        <button onclick="add(${p.id}, 5)" class="bg-blue-50 text-blue-600 text-[10px] font-bold py-2 rounded-lg">+5</button>
+                        <button onclick="add(${p.id}, 1)" class="bg-orange-500 text-white py-2 rounded-lg text-[10px] font-bold">+1</button>
+                        <button onclick="add(${p.id}, 10)" class="col-span-2 bg-slate-100 text-slate-500 py-1.5 rounded-lg text-[9px] font-bold mt-1 uppercase">Beli 10</button>
+                    </div>
+                </div>`).join('');
         }
+
         renderProduk();
     </script>
 </body>
