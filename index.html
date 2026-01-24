@@ -175,4 +175,146 @@
         renderProduk();
     </script>
 </body>
+</html>            <button onclick="toggleModal('cart-modal')" id="cart-btn" class="relative text-white p-2">
+                <i class="fa fa-shopping-bag text-2xl"></i>
+                <span id="cart-count" class="absolute top-0 right-0 bg-yellow-400 text-orange-900 text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-orange-600">0</span>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <div class="p-4">
+            <div class="bg-gradient-to-br from-orange-500 to-orange-700 rounded-3xl p-6 text-white shadow-xl">
+                <h1 class="text-2xl font-black italic uppercase leading-none">WARUNG ZIDAN</h1>
+                <p class="text-[10px] font-medium opacity-80 mt-2 tracking-widest uppercase">Pesan Sekarang, Langsung Diantar!</p>
+            </div>
+        </div>
+
+        <div class="px-4">
+            <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2 italic">
+                <i class="fa fa-fire text-orange-500"></i> Menu Jajanan
+            </h2>
+            <div class="grid grid-cols-2 gap-4" id="product-container"></div>
+        </div>
+    </main>
+
+    <div id="cart-modal" class="modal-base" onclick="closeModalOnOutsideClick(event)">
+        <div class="modal-content">
+            <button onclick="toggleModal('cart-modal')" class="absolute top-4 right-4 text-gray-400 p-2">
+                <i class="fa fa-times text-xl"></i>
+            </button>
+
+            <h2 class="text-xl font-bold mb-6 italic border-b pb-2">Rincian Belanja</h2>
+            <div id="cart-items" class="space-y-3 mb-4"></div>
+            
+            <textarea id="buyer-note" rows="2" class="w-full border-2 border-gray-100 rounded-2xl p-3 text-sm bg-gray-50 outline-none mb-4" placeholder="Catatan tambahan..."></textarea>
+            
+            <div class="flex justify-between items-center mb-6">
+                <span class="font-bold text-gray-500">Total</span>
+                <span id="total-price" class="text-2xl font-black text-orange-600">Rp 0</span>
+            </div>
+
+            <button onclick="processOrder()" class="w-full bg-orange-600 text-white py-4 rounded-2xl font-bold shadow-lg uppercase text-sm active:scale-95 transition-all">Kirim Pesanan ke WA</button>
+        </div>
+    </div>
+
+    <script>
+        const produk = [
+            { id: 1, nama: "Risol", harga: 1000, img: "img/risol.jpg" },
+            { id: 2, nama: "Kolang Kaling", harga: 13000, img: "img/kolang.jpg" },
+            { id: 3, nama: "Cireng Renyah", harga: 1000, img: "img/cireng.jpg" }
+        ];
+
+        let keranjang = {};
+
+        function renderProduk(data = produk) {
+            document.getElementById('product-container').innerHTML = data.map(p => `
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-2 relative">
+                    <img src="${p.img}" class="w-full h-32 object-cover rounded-2xl mb-2" onerror="this.src='https://via.placeholder.com/150?text=Food'">
+                    <h3 class="text-xs font-bold text-gray-800 truncate px-1">${p.nama}</h3>
+                    <p class="text-orange-600 font-black text-sm px-1">Rp ${p.harga.toLocaleString('id-ID')}</p>
+                    <div class="mt-2 grid grid-cols-2 gap-1 px-1 pb-1">
+                        <button onclick="addWithAnim(event, ${p.id}, 5)" class="bg-blue-50 text-blue-600 text-[10px] font-bold py-1 rounded-lg">+5</button>
+                        <button onclick="addWithAnim(event, ${p.id}, 1)" class="bg-orange-500 text-white py-1 rounded-lg text-[10px] font-bold shadow-sm">+1</button>
+                        <button onclick="addWithAnim(event, ${p.id}, 10)" class="col-span-2 bg-orange-100 text-orange-600 py-1.5 rounded-lg text-[9px] font-bold uppercase">Beli 10</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        function addWithAnim(e, id, qty) {
+            const btn = e.currentTarget;
+            const cartIcon = document.getElementById('cart-btn');
+            const flyer = document.createElement('div');
+            flyer.className = 'fly-item shadow-lg';
+            const rect = btn.getBoundingClientRect();
+            flyer.style.left = rect.left + 'px';
+            flyer.style.top = rect.top + 'px';
+            document.body.appendChild(flyer);
+
+            const cartRect = cartIcon.getBoundingClientRect();
+            setTimeout(() => {
+                flyer.style.left = (cartRect.left + 10) + 'px';
+                flyer.style.top = (cartRect.top + 10) + 'px';
+                flyer.style.transform = 'scale(0.1)';
+                flyer.style.opacity = '0';
+            }, 50);
+
+            setTimeout(() => {
+                flyer.remove();
+                keranjang[id] = (keranjang[id] || 0) + qty;
+                updateCartUI();
+            }, 600);
+        }
+
+        function updateCartUI() {
+            const list = document.getElementById('cart-items');
+            let total = 0, count = 0, html = '';
+            for (const id in keranjang) {
+                const p = produk.find(x => x.id == id);
+                total += (p.harga * keranjang[id]);
+                count += keranjang[id];
+                html += `<div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl">
+                            <span class="text-xs font-bold text-gray-700">${p.nama} (${keranjang[id]}x)</span>
+                            <span class="text-xs text-orange-600 font-bold">Rp ${(p.harga * keranjang[id]).toLocaleString('id-ID')}</span>
+                         </div>`;
+            }
+            document.getElementById('cart-count').innerText = count;
+            list.innerHTML = html || '<p class="text-center text-gray-400 text-xs py-4 italic">Keranjang masih kosong</p>';
+            document.getElementById('total-price').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+        }
+
+        function processOrder() {
+            if (Object.keys(keranjang).length === 0) return;
+            const note = document.getElementById('buyer-note').value;
+            let total = 0, waMsg = "*ORDER BARU - WARUNG ZIDAN*\n\n";
+            
+            for (const id in keranjang) {
+                const p = produk.find(x => x.id == id);
+                waMsg += `- ${p.nama} (${keranjang[id]}x)\n`;
+                total += (p.harga * keranjang[id]);
+            }
+            waMsg += `\n*TOTAL: Rp ${total.toLocaleString('id-ID')}*\nCatatan: ${note || '-'}`;
+
+            const nomorWA = "6285158765900"; 
+            window.location.href = `https://api.whatsapp.com/send?phone=${nomorWA}&text=${encodeURIComponent(waMsg)}`;
+        }
+
+        function toggleModal(id) {
+            const m = document.getElementById(id);
+            m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
+        }
+
+        function closeModalOnOutsideClick(e) {
+            if (e.target.id === 'cart-modal') toggleModal('cart-modal');
+        }
+
+        function searchProduct() {
+            const key = document.getElementById('search-input').value.toLowerCase();
+            renderProduk(produk.filter(p => p.nama.toLowerCase().includes(key)));
+        }
+
+        renderProduk();
+    </script>
+</body>
 </html>
+
