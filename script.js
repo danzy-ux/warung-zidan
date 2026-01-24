@@ -157,3 +157,10 @@ function kirimWA() {
 // LOAD AWAL
 renderCart();
 updateBadge();
+function closeModalOnOutsideClick(e) {
+    const modalContent = document.querySelector('.modal-content');
+    // Jika yang diklik adalah background hitamnya (bukan kotaknya), maka tutup
+    if (e.target.id === 'cart-modal') {
+        toggleModal('cart-modal');
+    }
+}
