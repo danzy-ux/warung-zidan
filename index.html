@@ -10,13 +10,15 @@
         @import url('https://fonts.googleapis.com/css2?family=sans-serif');
         body { font-family: sans-serif; background-color: #f3f4f6; -webkit-tap-highlight-color: transparent; }
         
-        /* Animasi Terbang */
         .fly-item { position: fixed; z-index: 9999; width: 25px; height: 25px; background: #f97316; border-radius: 50%; pointer-events: none; transition: all 0.6s ease-in-out; }
         
-        /* Modal Keranjang */
         .cart-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; align-items: flex-end; }
-        .modal-content { background: white; width: 100%; border-radius: 20px 20px 0 0; padding: 20px; animation: slideUp 0.3s ease-out; }
+        .modal-content { background: white; width: 100%; border-radius: 20px 20px 0 0; padding: 20px; animation: slideUp 0.3s ease-out; max-height: 90vh; overflow-y: auto; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        /* Style untuk textarea catatan */
+        .note-input { width: 100%; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; font-size: 13px; outline: none; transition: border-color 0.2s; background: #f9fafb; resize: none; }
+        .note-input:focus { border-color: #f97316; background: white; }
     </style>
 </head>
 <body class="pb-20">
@@ -40,7 +42,7 @@
     </header>
 
     <div class="p-4">
-        <div class="bg-orange-500 rounded-2xl p-5 text-white shadow-md relative overflow-hidden">
+        <div class="bg-orange-500 rounded-2xl p-5 text-white shadow-md">
             <h1 class="text-xl font-bold italic">WARUNG ZIDAN</h1>
             <p class="text-xs opacity-90">Jajanan Hits & Fresh Setiap Hari</p>
         </div>
@@ -67,17 +69,24 @@
     <div id="cart-modal" class="cart-modal">
         <div class="modal-content">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold">Isi Keranjang</h2>
-                <button onclick="toggleCart()" class="text-gray-400 text-xl">&times;</button>
+                <h2 class="text-lg font-bold italic">Pesanan Kamu</h2>
+                <button onclick="toggleCart()" class="bg-gray-100 w-8 h-8 rounded-full text-gray-400 text-xl flex items-center justify-center">&times;</button>
             </div>
-            <div id="cart-items" class="max-h-60 overflow-y-auto mb-4"></div>
-            <div class="border-t pt-4">
+            
+            <div id="cart-items" class="max-h-52 overflow-y-auto mb-4 border-b pb-2"></div>
+
+            <div class="mb-4">
+                <p class="text-[11px] font-bold text-gray-500 mb-2 uppercase tracking-wider">Catatan Tambahan (Opsional)</p>
+                <textarea id="buyer-note" rows="2" class="note-input" placeholder="Contoh: Risolnya jangan dipedesin ya, bungkusnya pisah..."></textarea>
+            </div>
+
+            <div class="pt-2">
                 <div class="flex justify-between font-bold text-lg mb-4">
-                    <span>Total:</span>
+                    <span class="text-sm text-gray-500">Total Pembayaran:</span>
                     <span id="total-price" class="text-orange-600">Rp 0</span>
                 </div>
-                <button onclick="checkoutWA()" class="w-full bg-green-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg">
-                    <i class="fab fa-whatsapp text-xl"></i> PESAN SEKARANG
+                <button onclick="checkoutWA()" class="w-full bg-green-500 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-all">
+                    <i class="fab fa-whatsapp text-2xl"></i> PESAN KE WHATSAPP
                 </button>
             </div>
         </div>
@@ -96,14 +105,14 @@
             const container = document.getElementById('product-container');
             container.innerHTML = data.map(p => `
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-                    <img src="${p.img}" class="w-full h-24 object-cover" onerror="this.src='https://via.placeholder.com/150?text=Zidan'">
+                    <img src="${p.img}" class="w-full h-24 object-cover" onerror="this.src='https://via.placeholder.com/150?text=Warung+Zidan'">
                     <div class="p-3">
                         <h3 class="text-xs font-bold text-gray-800 truncate">${p.nama}</h3>
                         <p class="text-orange-600 font-bold text-sm">Rp ${p.harga.toLocaleString('id-ID')}</p>
                         <div class="mt-2 grid grid-cols-2 gap-1">
                             <button onclick="addWithAnim(event, ${p.id}, 5)" class="bg-blue-50 text-blue-600 text-[10px] py-1 rounded">+5</button>
-                            <button onclick="addWithAnim(event, ${p.id}, 10)" class="bg-blue-50 text-blue-600 text-[10px] py-1 rounded">+10</button>
-                            <button onclick="addWithAnim(event, ${p.id}, 1)" class="col-span-2 bg-orange-500 text-white py-2 rounded-lg text-xs font-bold mt-1 shadow-sm uppercase">+ Keranjang</button>
+                            <button onclick="addWithAnim(event, ${p.id}, 1)" class="col-span-1 bg-orange-500 text-white py-1 rounded text-[10px] font-bold shadow-sm uppercase">+ 1</button>
+                            <button onclick="addWithAnim(event, ${p.id}, 10)" class="col-span-2 bg-orange-100 text-orange-600 py-1.5 rounded-lg text-[9px] font-bold mt-1 uppercase">Beli 10 Porsi</button>
                         </div>
                     </div>
                 </div>
@@ -152,21 +161,21 @@
                 total += (p.harga * qty);
                 count += qty;
                 html += `
-                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg mb-2 border">
+                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl mb-2">
                         <div>
-                            <p class="text-sm font-bold">${p.nama}</p>
-                            <p class="text-xs text-orange-600">Rp ${p.harga.toLocaleString('id-ID')} x ${qty}</p>
+                            <p class="text-xs font-bold">${p.nama}</p>
+                            <p class="text-[10px] text-orange-600">Rp ${p.harga.toLocaleString('id-ID')} x ${qty}</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button onclick="updateQty(${p.id}, -1)" class="w-8 h-8 bg-white border rounded-full font-bold shadow-sm">-</button>
-                            <span class="font-bold">${qty}</span>
-                            <button onclick="updateQty(${p.id}, 1)" class="w-8 h-8 bg-white border rounded-full font-bold shadow-sm text-orange-600">+</button>
+                            <button onclick="updateQty(${p.id}, -1)" class="w-7 h-7 bg-white border rounded-full text-xs font-bold">-</button>
+                            <span class="text-xs font-bold">${qty}</span>
+                            <button onclick="updateQty(${p.id}, 1)" class="w-7 h-7 bg-white border rounded-full text-xs font-bold text-orange-600">+</button>
                         </div>
                     </div>`;
             }
 
             document.getElementById('cart-count').innerText = count;
-            list.innerHTML = html || '<p class="text-center py-5 text-gray-400 italic">Keranjang kosong</p>';
+            list.innerHTML = html || '<p class="text-center py-5 text-gray-400 text-xs italic">Keranjang kosong</p>';
             totalDisplay.innerText = `Rp ${total.toLocaleString('id-ID')}`;
         }
 
@@ -181,16 +190,29 @@
         }
 
         function checkoutWA() {
-            if (Object.keys(keranjang).length === 0) return;
-            let msg = "*PESANAN WARUNG ZIDAN*\n\n";
+            if (Object.keys(keranjang).length === 0) return alert("Pilih menu dulu!");
+            
+            const note = document.getElementById('buyer-note').value;
+            let msg = "*PESANAN BARU - WARUNG ZIDAN*\n";
+            msg += "----------------------------------------\n";
+            
             let total = 0;
             for (const id in keranjang) {
                 const p = produk.find(x => x.id == id);
                 const sub = p.harga * keranjang[id];
-                msg += `- ${p.nama} (${keranjang[id]}x) = Rp ${sub.toLocaleString('id-ID')}\n`;
+                msg += `📌 ${p.nama} (${keranjang[id]}x) = Rp ${sub.toLocaleString('id-ID')}\n`;
                 total += sub;
             }
-            msg += `\n*TOTAL: Rp ${total.toLocaleString('id-ID')}*`;
+            
+            msg += "----------------------------------------\n";
+            msg += `*TOTAL TAGIHAN: Rp ${total.toLocaleString('id-ID')}*\n\n`;
+            
+            if (note.trim() !== "") {
+                msg += `*CATATAN PEMBELI:*\n_"${note}"_\n`;
+            }
+            
+            msg += "\nMohon segera diproses ya Min! 🙏";
+            
             window.location.href = `https://api.whatsapp.com/send?phone=6285158765900&text=${encodeURIComponent(msg)}`;
         }
 
